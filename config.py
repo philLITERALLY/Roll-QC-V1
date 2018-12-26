@@ -34,14 +34,23 @@ GREEN = (0, 255, 0)
 RED = (0, 0, 255)
 BLUE = (255, 0, 0)
 YELLOW = (0, 255, 255)
+PASS_FAIL_X = [120, 610, 1080]
+PASS_FAIL_Y = [0, 100, 200]
 
 # Threshold Settings
-WHITE_THRESH = 190
+WHITE_THRESH = 230
 MIN_AREA = 2000 # Pixels
 FAIL_WIDTH_LOW = 260.0 / WIDTH_RATIO # mm / ratio
 FAIL_WIDTH_HIGH = 300.0 / WIDTH_RATIO # mm / ratio
 FAIL_HEIGHT_LOW = 20.0 / HEIGHT_RATIO # mm
 FAIL_HEIGHT_HIGH = 38.0 / HEIGHT_RATIO # mm
+
+# Dev Mode - An array containing options
+# Options:
+#   pixels - displays pixel dimensions
+#   thresh - shows thresh images
+#   record  - records video
+DEV_MODE = ['pixels']
 
 def dimension_calc(width, height):
     """This function takes the pixel width and using the defined ratios converts to mm"""
