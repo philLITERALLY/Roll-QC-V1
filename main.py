@@ -101,9 +101,12 @@ while RUNONCE:
                 HEIGHTS_ARR[i].append(h)
 
                 pixel_dimensions = "{0}px x {1}px".format(w, h)
-                calc_dimensions = config.dimension_calc(w, h)
+                calc_dimensions = config.dimension_calc(i, w, h)
 
-                if w < config.FAIL_WIDTH_LOW or w > config.FAIL_WIDTH_HIGH or h < config.FAIL_HEIGHT_LOW or h > config.FAIL_HEIGHT_HIGH:
+                if w < config.LANE_FAIL_WIDTHS_LOW[i] or \
+                    w > config.LANE_FAIL_WIDTHS_HIGH[i] or \
+                    h < config.LANE_FAIL_HEIGHTS_LOW[i] or \
+                    h > config.LANE_FAIL_HEIGHTS_HIGH[i]:
                     color = config.RED
 
                 cv2.rectangle(ORIG_LANE_IMG, (x, y), (x+w, y+h), color, 2)
@@ -126,10 +129,10 @@ while RUNONCE:
                     if len(HEIGHTS_ARR[lane]) > 0:
                         average_height = sum(HEIGHTS_ARR[lane]) / len(HEIGHTS_ARR[lane])
 
-                    if average_width < config.FAIL_WIDTH_LOW or \
-                        average_width > config.FAIL_WIDTH_HIGH or \
-                        average_height < config.FAIL_HEIGHT_LOW or \
-                        average_height > config.FAIL_HEIGHT_HIGH:
+                    if average_width < config.LANE_FAIL_WIDTHS_LOW[lane] or \
+                        average_width > config.LANE_FAIL_WIDTHS_HIGH[lane] or \
+                        average_height < config.LANE_FAIL_HEIGHTS_LOW[lane] or \
+                        average_height > config.LANE_FAIL_HEIGHTS_HIGH[lane]:
                         FAIL_COUNTS[lane] += 1
                     else:
                         PASS_COUNTS[lane] += 1
