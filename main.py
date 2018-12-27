@@ -1,6 +1,7 @@
 """This program performs Quality Control on Sub Rolls"""
 
 # External Libraries
+import csv
 import cv2
 
 # My Modules
@@ -8,8 +9,12 @@ import camera_setup
 import info_logger
 import config
 
-# Create new log with date time
-info_logger.init()
+# Load login info
+LOGINS = []
+with open('logins.csv') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        LOGINS.append([row['card_number'], row['user_name']])
 
 # Get camera stream
 CAPTURE = camera_setup.main()
@@ -49,12 +54,14 @@ HEIGHTS_ARR = []
 KEYCARD_VALUE = ''
 
 # Create Pass/Fail Counts
-PASS_COUNT = []
-FAIL_COUNT = []
+PASS_COUNTS = []
+FAIL_COUNTS = []
 
 for i in range(config.LANE_COUNT):
-    PASS_COUNT.append(0)
-    FAIL_COUNT.append(0)
+    PASS_COUNTS.append(0)
+    FAIL_COUNTS.append(0)
+
+info_logger.results_header()
 
 while RUNONCE:
     # Take each FRAME
@@ -123,9 +130,11 @@ while RUNONCE:
                         average_width > config.FAIL_WIDTH_HIGH or \
                         average_height < config.FAIL_HEIGHT_LOW or \
                         average_height > config.FAIL_HEIGHT_HIGH:
-                        FAIL_COUNT[lane] += 1
+                        FAIL_COUNTS[lane] += 1
                     else:
-                        PASS_COUNT[lane] += 1
+                        PASS_COUNTS[lane] += 1
+                
+                info_logger.result(PASS_COUNTS, FAIL_COUNTS)
 
                 # Reset arrays
                 WIDTHS_ARR[i] = []
@@ -137,7 +146,7 @@ while RUNONCE:
 
     # Show Pass Fail Rate for each
     for i in range(config.LANE_COUNT):
-        cv2.putText(CROPPED, "PASS: " + str(PASS_COUNT[i]) + " FAIL: " + str(FAIL_COUNT[i]), (config.PASS_FAIL_X[i], LANE_Y2 + 30), config.FONT, 1, config.BLUE, 2)
+        cv2.putText(CROPPED, "PASS: " + str(PASS_COUNTS[i]) + " FAIL: " + str(FAIL_COUNTS[i]), (config.PASS_FAIL_X[i], LANE_Y2 + 30), config.FONT, 1, config.BLUE, 2)
 
     # Resize and show image
     cv2.imshow('CROPPED', cv2.resize(CROPPED, (1280, 960)))
@@ -149,15 +158,24 @@ while RUNONCE:
     # RUNONCE = 0
 
     k = cv2.waitKey(1) & 0xFF
-    if k == 27:
-        break
-    elif k == 13:
-        print("Keycard Value: " + KEYCARD_VALUE)
-        break
-    elif k != 255:
-        KEYCARD_VALUE += chr(k)
+    if k == 13:
+        username = ''
+        
+        # Loop through users to find keycard value
+        for user in LOGINS:
+            if user[0] == KEYCARD_VALUE:
+                username = user[1]
 
-info_logger.shutdown()
+        # If keycard value exists and user found
+        if username != '':
+            info_logger.logout(KEYCARD_VALUE, username)
+            break
+        else:
+            info_logger.logout_error(KEYCARD_VALUE)
+
+        KEYCARD_VALUE = ''
+    elif k != 255 and k != 27:
+        KEYCARD_VALUE += chr(k)
 
 # Release everything if job is finished
 CAPTURE.release()
