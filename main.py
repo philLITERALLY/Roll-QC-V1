@@ -3,6 +3,7 @@
 # External Libraries
 import csv
 import cv2
+import datetime
 
 # My Modules
 import camera_setup
@@ -54,6 +55,8 @@ HEIGHTS_ARR = []
 KEYCARD_VALUE = ''
 
 # Create Pass/Fail Counts
+PASS = []
+FAIL = []
 PASS_COUNTS = []
 FAIL_COUNTS = []
 
@@ -119,6 +122,8 @@ while RUNONCE:
             elif leading_edge > exiting_box and (WIDTHS_ARR[i] or HEIGHTS_ARR[i]):
                 cv2.rectangle(ORIG_LANE_IMG, (x, y), (x+w, y+h), config.BLUE, 2)
 
+
+
                 for lane in range(config.LANE_COUNT):
                     average_width = 0
                     average_height = 0
@@ -133,13 +138,21 @@ while RUNONCE:
                         average_width > config.LANE_FAIL_WIDTHS_HIGH[lane] or \
                         average_height < config.LANE_FAIL_HEIGHTS_LOW[lane] or \
                         average_height > config.LANE_FAIL_HEIGHTS_HIGH[lane]:
+                        FAIL[lane] = 1
+                        PASS[lane] = 0
                         FAIL_COUNTS[lane] += 1
                     else:
+                        PASS[lane] = 1
+                        FAIL[lane] = 0
                         PASS_COUNTS[lane] += 1
                 
                 info_logger.result(PASS_COUNTS, FAIL_COUNTS)
                 with open('results.csv','a') as fd:
-                    fd.write(myCsvRow)
+                    result_str = datetime.datetime.now()
+                    for i in range(config.LANE_COUNT):
+                        result_str += str(PASS[i]) + ',' + str(FAIL[i]) + ','
+
+                    fd.write(result_str)
 
                 # Reset arrays
                 WIDTHS_ARR[i] = []
