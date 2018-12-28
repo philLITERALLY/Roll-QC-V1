@@ -7,7 +7,6 @@ import cv2      # OpenCV
 import config
 import info_logger
 
-
 def main():
     """Initialise and apply camera settings"""
     capture = cv2.VideoCapture(0)

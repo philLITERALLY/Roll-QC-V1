@@ -60,14 +60,12 @@ def logout_error(keycard_value):
     logging.error('  Time: %s', datetime.datetime.now())
 
 def result(pass_counts, fail_counts):
-    """This adds a row result"""
+    """This adds a row result to CSV file"""
     row = [str(datetime.datetime.now())]
 
     for i in range(config.LANE_COUNT):
         row.append(str(pass_counts[i]))
         row.append(str(fail_counts[i]))
-
-    print(row)
 
     with open('results.csv', 'ab') as csvFile:
         writer = csv.writer(csvFile)

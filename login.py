@@ -7,6 +7,7 @@ import os
 
 # My Modules
 import info_logger
+import get_logins
 
 # Create new application start with date time
 info_logger.init()
@@ -19,11 +20,7 @@ login_page.title("LOGIN PAGE")
 error = tk.Label(login_page ,text="KEYCARD ERROR - TRY AGAIN", font="Helvetica 26 bold", fg="red")
 
 # Load login info
-LOGINS = []
-with open('logins.csv') as csvfile:
-    reader = csv.DictReader(csvfile)
-    for row in reader:
-        LOGINS.append([row['card_number'], row['user_name']])
+LOGINS = get_logins.main()
 
 def return_key(event):
     username = ''
@@ -45,7 +42,7 @@ def return_key(event):
         login_page.withdraw()
 
         # Load camera script
-        os.system('main.py')
+        os.system('running.py')
         
         # When camera script exists show login window
         login_page.deiconify()
