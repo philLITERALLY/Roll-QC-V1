@@ -3,6 +3,7 @@
 # External Libraries
 import logging
 import datetime
+import csv
 
 # My Modules
 import variables
@@ -58,18 +59,21 @@ def logout_error(keycard_value):
     logging.error('  Keycard Value: %s', keycard_value)
     logging.error('  Time: %s', datetime.datetime.now())
 
-def results_header():
-    """This creates the header for running results logging"""
-    logging.info(' ')
-    logging.info('LANE 1 PASS                | LANE 1 FAIL                | LANE 2 PASS                | LANE 2 FAIL                | LANE 3 PASS                | LANE 3 FAIL        ')
-
 def result(pass_counts, fail_counts):
     """This adds a row result"""
-    result_str = ''
+    row = [str(datetime.datetime.now())]
+
     for i in range(config.LANE_COUNT):
-        result_str += str(pass_counts[i]).ljust(26) + ' | ' + str(fail_counts[i]).ljust(26) + ' | '
-    
-    logging.info(result_str)
+        row.append(str(pass_counts[i]))
+        row.append(str(fail_counts[i]))
+
+    print(row)
+
+    with open('results.csv', 'ab') as csvFile:
+        writer = csv.writer(csvFile)
+        writer.writerow(row)
+
+    csvFile.close()
 
 def shutdown():
     """This function writes the shutdown information to the log"""
