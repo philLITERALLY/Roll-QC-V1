@@ -2,6 +2,11 @@
 __pycache__/
 .vscode/
 
+# Test Files #
+##############
+run.py
+ui.py
+
 # Media Files #
 ###############
 *.avi

@@ -138,6 +138,8 @@ while RUNONCE:
                         PASS_COUNTS[lane] += 1
                 
                 info_logger.result(PASS_COUNTS, FAIL_COUNTS)
+                with open('results.csv','a') as fd:
+                    fd.write(myCsvRow)
 
                 # Reset arrays
                 WIDTHS_ARR[i] = []
