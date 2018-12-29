@@ -1,8 +1,10 @@
-"""This program performs Quality Control on Sub Rolls"""
+'''This program performs Quality Control on Sub Rolls'''
 
 # External Libraries
+import sys
 import cv2
 import datetime
+import fileinput
 
 # My Modules
 import info_logger
@@ -12,6 +14,11 @@ import camera_setup
 import running_window
 import lane_handling
 import program_state
+
+# Set if program is in admin mode
+program_state.set_admin_user('True')
+if len(sys.argv) > 1:
+    program_state.set_admin_user(sys.argv[1])
 
 RUN_MODE = program_state.RUN_MODE
 STOP_PROGRAM = program_state.STOP_PROGRAM
@@ -32,6 +39,8 @@ RUNONCE = 1
 # Create a list of lists for each lane. Will hold each frames dimensions to calculate average
 WIDTHS_ARR = []
 HEIGHTS_ARR = []
+CALIB_WIDTHS = []
+CALIB_HEIGHTS = []
 
 # Create Keycard String
 KEYCARD_VALUE = ''
@@ -52,6 +61,8 @@ app = running_window.RunningWindow()
 app.start()
 
 while RUNONCE:
+    reload(config)
+
     # Take each FRAME
     _, FRAME = CAPTURE.read()
 
@@ -59,16 +70,38 @@ while RUNONCE:
     GRAY = cv2.cvtColor(CROPPED, cv2.COLOR_BGR2GRAY)
     _, THRESHOLD_IMG = cv2.threshold(GRAY, config.WHITE_THRESH, 255, 0)
 
-    for_statement = (lane for lane in range(config.LANE_COUNT) if program_state.RUN_MODE)
-    for lane in for_statement:
-        lane_handling.main(lane, CROPPED, THRESHOLD_IMG, WIDTHS_ARR, HEIGHTS_ARR, FAIL_COUNTS, PASS_COUNTS, LANE_FAIL, LANE_PASS)
+    # Running Mode
+    running_statement = (lane for lane in range(config.LANE_COUNT) if program_state.RUN_MODE)
+    for lane in running_statement:
+        lane_handling.running(lane, CROPPED, THRESHOLD_IMG, WIDTHS_ARR, HEIGHTS_ARR, FAIL_COUNTS, PASS_COUNTS, LANE_FAIL, LANE_PASS)
+
+    # Calibrate Mode
+    calibrate_statement = (lane for lane in range(config.LANE_COUNT) if program_state.CALIBRATE_MODE)
+    for lane in calibrate_statement:
+        lane_handling.calibrate(lane, CROPPED, THRESHOLD_IMG, program_state.REQUEST_CALIBRATE, CALIB_WIDTHS, CALIB_HEIGHTS)
+
+    if program_state.REQUEST_CALIBRATE:
+        lines = open('config.py', 'r').readlines()
+        lines[6] = 'PIXEL_WIDTHS = ' + str(CALIB_WIDTHS) + ' # px\n'
+        lines[7] = 'PIXEL_HEIGHTS = ' + str(CALIB_HEIGHTS) + ' # px\n'
+        out = open('config.py', 'w')
+        out.writelines(lines)
+        out.close()
+
+        program_state.request_calibration(False)
+        CALIB_WIDTHS = []
+        CALIB_HEIGHTS = []
 
     # Show Lane Boundaries
     cv2.rectangle(CROPPED, (config.LANE_X1, config.LANE_Y1), (config.LANE_X2, config.LANE_Y2), config.YELLOW, 2)
     cv2.rectangle(CROPPED, (config.SPLIT_X1, config.LANE_Y1), (config.SPLIT_X2, config.LANE_Y2), config.YELLOW, 2)
 
-    # Resize and show image
-    cv2.imshow('LINE VIEW', cv2.resize(CROPPED, (1280, 960)))
+    # get the size of the screen
+    width, height = 1280, 1024
+    window_name = 'LINE VIEW'
+    cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
+    cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    cv2.imshow(window_name, CROPPED)
 
     # write the frame
     if 'record' in config.DEV_MODE:

@@ -1,4 +1,4 @@
-"""This module handles the contours"""
+'''This module handles the contours'''
 
 # External Libraries
 import cv2      # OpenCV
@@ -7,7 +7,7 @@ import cv2      # OpenCV
 import config
 import info_logger
 
-def main(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, PASS_COUNTS, FAIL, PASS):
+def running(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, PASS_COUNTS, FAIL, PASS):
     x, y, w, h = cv2.boundingRect(contour)
     color = config.GREEN
 
@@ -19,7 +19,7 @@ def main(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, PAS
         WIDTHS_ARR[lane].append(w)
         HEIGHTS_ARR[lane].append(h)
 
-        pixel_dimensions = "{0}px x {1}px".format(w, h)
+        pixel_dimensions = '{0}px x {1}px'.format(w, h)
         calc_dimensions = config.dimension_calc(lane, w, h)
 
         if w < config.LANE_FAIL_WIDTHS_LOW[lane] or \
@@ -65,3 +65,24 @@ def main(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, PAS
         # Reset arrays
         WIDTHS_ARR[lane] = []
         HEIGHTS_ARR[lane] = []
+
+def calibrate(lane, contour, ORIG_LANE_IMG, request_calibrate, CALIB_WIDTHS, CALIB_HEIGHTS):
+    x, y, w, h = cv2.boundingRect(contour)
+    color = config.BLUE
+
+    leading_edge = y + h
+    exiting_box = config.LANE_HEIGHT - config.EDGE_GAP
+    
+    # If blob deteced within our scan section
+    if y > config.EDGE_GAP and leading_edge < exiting_box :
+        pixel_dimensions = '{0}px x {1}px'.format(w, h)
+        calc_dimensions = config.dimension_calc(lane, w, h)
+
+        cv2.rectangle(ORIG_LANE_IMG, (x, y), (x+w, y+h), color, 2)
+        cv2.putText(ORIG_LANE_IMG, calc_dimensions, (x, y), config.FONT, 1, color, 2)
+
+        cv2.putText(ORIG_LANE_IMG, pixel_dimensions, (x, y + h), config.FONT, 1, config.BLUE, 2)
+       
+        if request_calibrate:
+            CALIB_WIDTHS[lane] = float(w)
+            CALIB_HEIGHTS[lane] = float(h)

@@ -1,4 +1,4 @@
-"""This module gets stored login information"""
+'''This module gets stored login information'''
 
 import csv
 

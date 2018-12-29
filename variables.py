@@ -1,4 +1,4 @@
-"""This module contains any variables required for the program to run"""
+'''This module contains any variables required for the program to run'''
 
 CAMERA_VARIABLES = [
     'CAP_PROP_POS_MSEC',

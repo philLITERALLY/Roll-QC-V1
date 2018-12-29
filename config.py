@@ -1,7 +1,11 @@
-"""This module contains any configuration variables required for the program to run"""
+'''This module contains any configuration variables required for the program to run'''
 
 # External Libraries
 import cv2
+
+# Calibration Settings
+PIXEL_WIDTHS = [383.5, 378.0, 367.0] # px
+PIXEL_HEIGHTS = [44.0, 43.2, 40.0] # px
 
 # Camera Settings
 CAM_WIDTH = 1920
@@ -43,8 +47,6 @@ SPLIT_X2 = LANE_WIDTH_END[1]
 # Size Settings - Calibration Settings
 ACTUAL_WIDTH = 300.0 # mm
 ACTUAL_HEIGHT = 30.0 # mm
-PIXEL_WIDTHS = [383.5, 378.0, 367.0] # px
-PIXEL_HEIGHTS = [44.0, 43.2, 40.0] # px
 WIDTH_RATIOS = [ACTUAL_WIDTH / PIXEL_WIDTHS[0], ACTUAL_WIDTH / PIXEL_WIDTHS[1], ACTUAL_WIDTH / PIXEL_WIDTHS[2]]
 HEIGHT_RATIOS = [ACTUAL_HEIGHT / PIXEL_HEIGHTS[0], ACTUAL_HEIGHT / PIXEL_HEIGHTS[1], ACTUAL_HEIGHT / PIXEL_HEIGHTS[2]]
 
@@ -74,10 +76,10 @@ LANE_FAIL_HEIGHTS_HIGH = [FAIL_WIDTH_LOW / HEIGHT_RATIOS[0], FAIL_WIDTH_LOW / HE
 #   pixels - displays pixel dimensions
 #   thresh - shows thresh images
 #   record  - records video
-DEV_MODE = ['pixels']
+DEV_MODE = []
 
 def dimension_calc(lane, width, height):
-    """This function takes the pixel width and using the defined ratios converts to mm"""
+    '''This function takes the pixel width and using the defined ratios converts to mm'''
     converted_width = int(width * WIDTH_RATIOS[lane])
     converted_height = int(height * HEIGHT_RATIOS[lane])
-    return "{0}mm x {1}mm".format(converted_width, converted_height)
+    return '{0}mm x {1}mm'.format(converted_width, converted_height)

@@ -1,4 +1,4 @@
-"""This module sets up the camera"""
+'''This module sets up the camera'''
 
 # External Libraries
 import cv2      # OpenCV
@@ -8,7 +8,7 @@ import config
 import info_logger
 
 def main():
-    """Initialise and apply camera settings"""
+    '''Initialise and apply camera settings'''
     capture = cv2.VideoCapture(0)
     capture.set(3, config.CAM_WIDTH)
     capture.set(4, config.CAM_HEIGHT)

@@ -8,16 +8,17 @@ import os
 # My Modules
 import info_logger
 import get_logins
+import program_state
 
 # Create new application start with date time
 info_logger.init()
 
 login_page = tk.Tk()
-login_page.attributes("-fullscreen", True)
-login_page.title("LOGIN PAGE")
+login_page.attributes('-fullscreen', True)
+login_page.title('LOGIN PAGE')
 
 # Create error message that will hide/show
-error = tk.Label(login_page ,text="KEYCARD ERROR - TRY AGAIN", font="Helvetica 26 bold", fg="red")
+error = tk.Label(login_page ,text='KEYCARD ERROR - TRY AGAIN', font='Helvetica 26 bold', fg='red')
 
 # Load login info
 LOGINS = get_logins.main()
@@ -42,7 +43,10 @@ def return_key(event):
         login_page.withdraw()
 
         # Load camera script
-        os.system('running.py')
+        if username == 'Master':
+            os.system('running.py True')
+        else:
+            os.system('running.py False')
         
         # When camera script exists show login window
         login_page.deiconify()
@@ -51,23 +55,24 @@ def return_key(event):
         error.place(relx=0.5, rely=0.65, anchor=tk.CENTER)
 
     keycard_input.set('')
+    input.focus_set()
 
 def on_closing():
-    if tkMessageBox.askokcancel("Quit", "Do you want to quit?"):
+    if tkMessageBox.askokcancel('Quit', 'Do you want to quit?'):
         info_logger.shutdown()
         login_page.destroy()
 
 # If window is closed call logging function
-login_page.protocol("WM_DELETE_WINDOW", on_closing)
+login_page.protocol('WM_DELETE_WINDOW', on_closing)
 
 # If return key entered on page call login function
 login_page.bind('<Return>', return_key)
 
-header = tk.Label(login_page ,text="SCAN KEYCARD", font="Helvetica 26 bold")
+header = tk.Label(login_page ,text='SCAN KEYCARD', font='Helvetica 26 bold')
 header.place(relx=0.5, rely=0.45, anchor=tk.CENTER)
 
 keycard_input = tk.StringVar()
-input = tk.Entry(login_page, font="Helvetica 26 bold", textvariable=keycard_input)
+input = tk.Entry(login_page, font='Helvetica 26 bold', textvariable=keycard_input)
 input.place(relx=0.5, rely=0.55, anchor=tk.CENTER)
 input.focus()
 
