@@ -1,15 +1,16 @@
 import Tkinter
 
-def runningBtn(self):
+def resultsBtn(self):
     return Tkinter.Button(
         self.root,
-        text='RUN',
+        text='RESULTS',
         font='Helvetica 24 bold',
         width=20,
         height=5,
-        bg='green',
-        activebackground='green',
-        command=self.run_btn
+        bg='blue',
+        activebackground='blue',
+        foreground='white',
+        command=self.results_btn
     )
 
 def calibrateModeBtn(self):

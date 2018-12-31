@@ -21,3 +21,27 @@ CAMERA_VARIABLES = [
     'CAP_PROP_WHITE_BALANCE',
     'CAP_PROP_RECTIFICATION',
 ]
+
+IO_RUNNING = 256 # Output 8 set high
+IO_REQUEST = 1280 # Outputs 8 and 10 set high
+IO_ACK = 1 # Input 1 set high
+
+# Changes IO array to value
+def CALCULATE_IO_VALUE(VALUES):
+    # reverse array
+    VALUES.reverse()
+    # turn array into string
+    VALUES = ''.join(map(str, VALUES))
+
+    # return binary string converted to decimal
+    return int(VALUES, 2)
+
+# Changes value IO array
+def CALCULATE_FROM_IO_VALUE(VALUE):
+    VALUE = "{0:#b}".format(VALUE)
+    
+    # reverse binary
+    VALUE[::-1]
+
+    # return binary string converted to decimal
+    print(VALUE)

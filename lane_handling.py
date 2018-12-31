@@ -9,7 +9,7 @@ import contour_handling
 
 TEXT_Y = config.LANE_HEIGHT_END[0] - config.EDGE_GAP + 30
 
-def running(lane, CROPPED, THRESHOLD_IMG, WIDTHS_ARR, HEIGHTS_ARR, FAIL_COUNTS, PASS_COUNTS, LANE_FAIL, LANE_PASS):
+def running(lane, CROPPED, THRESHOLD_IMG, WIDTHS_ARR, HEIGHTS_ARR, FAIL_COUNTS, PASS_COUNTS, LANE_FAIL, LANE_PASS, AVG_WIDTHS, AVG_HEIGHTS):
     # If no array exists to gather size info create
     if len(WIDTHS_ARR) <= lane or len(WIDTHS_ARR) <= lane:
         WIDTHS_ARR.append([])
@@ -27,7 +27,32 @@ def running(lane, CROPPED, THRESHOLD_IMG, WIDTHS_ARR, HEIGHTS_ARR, FAIL_COUNTS, 
 
     # for each contour draw a bounding box and dimensions
     for contour in CONTOURS:
-        contour_handling.running(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, PASS_COUNTS, LANE_FAIL, LANE_PASS)
+        contour_handling.running(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, PASS_COUNTS, LANE_FAIL, LANE_PASS, AVG_WIDTHS, AVG_HEIGHTS)
+
+    # Show Pass Fail Rate for each	
+    for i in range(config.LANE_COUNT):        
+        PASS_TEXT = "PASS: " + str(PASS_COUNTS[i])
+        FAIL_TEXT = "FAIL: " + str(FAIL_COUNTS[i])
+
+        AVG_TEXT = "AVG: 0%"
+        if PASS_COUNTS[i] > 0:
+            AVG_TEXT = "AVG: " + str(100 * PASS_COUNTS[i] / (PASS_COUNTS[i] + FAIL_COUNTS[i])) + "%"
+
+        AVG_WIDTHS_TEXT = ""
+        if len(AVG_WIDTHS[i]) > 0:
+            AVG_WIDTH = int(sum(AVG_WIDTHS[i]) / float(len(AVG_WIDTHS[i])))
+            AVG_WIDTHS_TEXT = "AVG WIDTH: " + str(AVG_WIDTH) + "mm"
+
+        AVG_HEIGHTS_TEXT = ""
+        if len(AVG_HEIGHTS[i]) > 0:
+            AVG_HEIGHT = int(sum(AVG_HEIGHTS[i]) / float(len(AVG_HEIGHTS[i])))
+            AVG_HEIGHTS_TEXT = "AVG HEIGHT: " + str(AVG_HEIGHT) + "mm"
+
+        cv2.putText(CROPPED, PASS_TEXT, (config.PASS_FAIL_X[i], TEXT_Y), config.FONT, 1, config.BLUE, 2)
+        cv2.putText(CROPPED, FAIL_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 30), config.FONT, 1, config.BLUE, 2)
+        cv2.putText(CROPPED, AVG_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 60), config.FONT, 1, config.BLUE, 2)
+        cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 90), config.FONT, 1, config.BLUE, 2)
+        cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 120), config.FONT, 1, config.BLUE, 2)
 
 def calibrate(lane, CROPPED, THRESHOLD_IMG, request_calibrate, CALIB_WIDTHS, CALIB_HEIGHTS):
     # If no array exists to gather size info create

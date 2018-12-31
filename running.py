@@ -5,6 +5,7 @@ import sys
 import cv2
 import datetime
 import fileinput
+import time
 
 # My Modules
 import info_logger
@@ -14,11 +15,16 @@ import camera_setup
 import running_window
 import lane_handling
 import program_state
+import variables
 
-# Set if program is in admin mode
-program_state.set_admin_user('True')
-if len(sys.argv) > 1:
-    program_state.set_admin_user(sys.argv[1])
+# AIO DLL
+import clr
+AIO_DLL = clr.AddReference(R'C:\Users\Public\Documents\ACCES\PCIe-IDIO-24\Win32\C#\bin\Release\AIOWDMNet.dll')
+from AIOWDMNet import AIOWDM # pylint: disable=E0401
+AIO_INSTANCE = AIOWDM()
+
+# Reset AIO to empty
+AIO_INSTANCE.RelOutPort(0, 0, 0)
 
 RUN_MODE = program_state.RUN_MODE
 STOP_PROGRAM = program_state.STOP_PROGRAM
@@ -50,18 +56,43 @@ LANE_PASS = []
 LANE_FAIL = []
 PASS_COUNTS = []
 FAIL_COUNTS = []
+AVG_WIDTHS = []
+AVG_HEIGHTS = []
 
 for i in range(config.LANE_COUNT):
     LANE_PASS.append(0)
     LANE_FAIL.append(0)
     PASS_COUNTS.append(0)
     FAIL_COUNTS.append(0)
+    AVG_WIDTHS.append([])
+    AVG_HEIGHTS.append([])
 
 app = running_window.RunningWindow()
 app.start()
 
-while RUNONCE:
+while True:
+    # Set AIO to running (high on 8)
+    if program_state.RUN_MODE:
+        AIO_INSTANCE.RelOutPort(0, 0, variables.IO_RUNNING)
+
+    # Reload any config changes
     reload(config)
+
+    if not program_state.RUN_MODE:
+        LANE_PASS = []
+        LANE_FAIL = []
+        PASS_COUNTS = []
+        FAIL_COUNTS = []
+        AVG_WIDTHS = []
+        AVG_HEIGHTS = []
+
+        for i in range(config.LANE_COUNT):
+            LANE_PASS.append(0)
+            LANE_FAIL.append(0)
+            PASS_COUNTS.append(0)
+            FAIL_COUNTS.append(0)
+            AVG_WIDTHS.append([])
+            AVG_HEIGHTS.append([])
 
     # Take each FRAME
     _, FRAME = CAPTURE.read()
@@ -73,7 +104,7 @@ while RUNONCE:
     # Running Mode
     running_statement = (lane for lane in range(config.LANE_COUNT) if program_state.RUN_MODE)
     for lane in running_statement:
-        lane_handling.running(lane, CROPPED, THRESHOLD_IMG, WIDTHS_ARR, HEIGHTS_ARR, FAIL_COUNTS, PASS_COUNTS, LANE_FAIL, LANE_PASS)
+        lane_handling.running(lane, CROPPED, THRESHOLD_IMG, WIDTHS_ARR, HEIGHTS_ARR, FAIL_COUNTS, PASS_COUNTS, LANE_FAIL, LANE_PASS, AVG_WIDTHS, AVG_HEIGHTS)
 
     # Calibrate Mode
     calibrate_statement = (lane for lane in range(config.LANE_COUNT) if program_state.CALIBRATE_MODE)
@@ -107,8 +138,6 @@ while RUNONCE:
     if 'record' in config.DEV_MODE:
         OUT.write(CROPPED)
 
-    # RUNONCE = 0
-
     k = cv2.waitKey(1) & 0xFF
     if k == 13:
         username = ''
@@ -134,6 +163,9 @@ while RUNONCE:
 
 # Release everything if job is finished
 CAPTURE.release()
+
+# Reset AIO to empty
+AIO_INSTANCE.RelOutPort(0, 0, 0)
 
 if 'record' in config.DEV_MODE:
     OUT.release()

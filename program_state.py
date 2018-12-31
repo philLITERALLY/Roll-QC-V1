@@ -1,6 +1,6 @@
 '''This module handles the programs state'''
 
-RUN_MODE = False
+RUN_MODE = True
 STOP_PROGRAM = False
 ADMIN_USER = False
 CALIBRATE_MODE = False

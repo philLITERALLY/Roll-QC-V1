@@ -2,12 +2,20 @@
 
 # External Libraries
 import cv2      # OpenCV
+import time
+
+# AIO DLL
+import clr
+AIO_DLL = clr.AddReference(R'C:\Users\Public\Documents\ACCES\PCIe-IDIO-24\Win32\C#\bin\Release\AIOWDMNet.dll')
+from AIOWDMNet import AIOWDM # pylint: disable=E0401
+AIO_INSTANCE = AIOWDM()
 
 # My Modules
 import config
 import info_logger
+import variables
 
-def running(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, PASS_COUNTS, FAIL, PASS):
+def running(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, PASS_COUNTS, FAIL, PASS, AVG_WIDTHS, AVG_HEIGHTS):
     x, y, w, h = cv2.boundingRect(contour)
     color = config.GREEN
 
@@ -44,9 +52,11 @@ def running(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, 
 
             if len(WIDTHS_ARR[index]) > 0:
                 average_width = sum(WIDTHS_ARR[index]) / len(WIDTHS_ARR[index])
+                AVG_WIDTHS[lane].append(average_width * config.WIDTH_RATIOS[lane])
 
             if len(HEIGHTS_ARR[index]) > 0:
                 average_height = sum(HEIGHTS_ARR[index]) / len(HEIGHTS_ARR[index])
+                AVG_HEIGHTS[lane].append(average_height * config.HEIGHT_RATIOS[lane])
 
             if average_width < config.LANE_FAIL_WIDTHS_LOW[index] or \
                 average_width > config.LANE_FAIL_WIDTHS_HIGH[index] or \
@@ -59,7 +69,22 @@ def running(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, 
                 PASS_COUNTS[index] += 1
                 PASS[index] = 1
                 FAIL[index] = 0
-        
+               
+        # Request ACK from PLC
+        AIO_INSTANCE.RelOutPort(0, 0, variables.IO_REQUEST)
+
+        # Create output for IO
+        OUTPUT = []
+        for i in range(config.LANE_COUNT):
+            OUTPUT.append(PASS[i])
+            OUTPUT.append(FAIL[i])
+
+        # Wait for ACK from PLC
+        while AIO_INSTANCE.RelInPort(0, 4) != variables.IO_ACK:
+            pass
+
+        AIO_INSTANCE.RelOutPort(0, 0, variables.CALCULATE_IO_VALUE(OUTPUT))        
+
         info_logger.result(PASS, FAIL)
 
         # Reset arrays

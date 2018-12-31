@@ -3,6 +3,7 @@
 # External Libraries
 import threading
 import Tkinter
+import os
 
 # Main Variables 
 import program_state
@@ -38,45 +39,8 @@ class RunningWindow(threading.Thread):
 
         KEYCARD_VALUE = ''
 
-    def run_btn(self):
-        if (self.root.runBtn.cget('text') == 'RUN') :
-                program_state.set_runmode(True)
-                self.root.runBtn.configure(bg='red', activebackground='red', text='PAUSE')
-
-                if program_state.ADMIN_USER == 'True':
-                    self.root.calibrateModeBtn.pack_forget()
-
-        elif (self.root.runBtn.cget('text') == 'PAUSE') :
-                program_state.set_runmode(False)
-                self.root.runBtn.configure(bg='green', activebackground='green', text='RUN')
-
-                if program_state.ADMIN_USER == 'True':
-                    self.root.calibrateModeBtn.pack()
-
-    def calibrate_mode_btn(self):
-        if (self.root.calibrateModeBtn.cget('text') == 'CALIBRATE MODE') :
-                program_state.set_calibrate_mode(True)
-
-                # Hide buttons
-                self.root.runBtn.pack_forget()
-                self.root.calibrateModeBtn.pack_forget()
-
-                self.root.calibrateBtn = buttons.calibrateBtn(self)
-                self.root.calibrateBtn.pack(side=Tkinter.LEFT)
-                self.root.calibrateModeBtn.configure(bg='red', activebackground='red', text='EXIT')
-                self.root.calibrateModeBtn.pack(side=Tkinter.LEFT)
-
-        elif (self.root.calibrateModeBtn.cget('text') == 'EXIT') :
-                program_state.set_calibrate_mode(False)
-
-                # Hide buttons
-                self.root.calibrateBtn.pack_forget()
-                self.root.calibrateModeBtn.pack_forget()
-
-                self.root.runBtn = buttons.runningBtn(self)
-                self.root.runBtn.pack(side=Tkinter.LEFT)
-                self.root.calibrateModeBtn.configure(bg='yellow', activebackground='yellow', text='CALIBRATE MODE')
-                self.root.calibrateModeBtn.pack(side=Tkinter.LEFT)
+    def results_btn(self):
+        os.system('results.csv')
 
     def calibrate_btn(self):
         program_state.request_calibration(True)
@@ -96,14 +60,14 @@ class RunningWindow(threading.Thread):
         h = 214 # height for the Tk root
 
         # calculate x and y coordinates for the Tk root window
-        x = (ws/2) - (w/2)
+        x = ws - w
         y = hs - h
 
         # set the dimensions of the screen and where it is placed
         self.root.geometry('%dx%d+%d+%d' % (w, h, x, y))
 
-        self.root.runBtn = buttons.runningBtn(self)
-        self.root.runBtn.pack(side=Tkinter.LEFT)
+        self.root.resultsBtn = buttons.resultsBtn(self)
+        self.root.resultsBtn.pack(side=Tkinter.LEFT)
 
         if program_state.ADMIN_USER == 'True':
             self.root.calibrateModeBtn = buttons.calibrateModeBtn(self)

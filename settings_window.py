@@ -15,7 +15,7 @@ info_logger.init()
 
 login_page = tk.Tk()
 login_page.attributes('-fullscreen', True)
-login_page.title('LOGIN PAGE')
+login_page.title('SETTINGS PAGE')
 
 # Create error message that will hide/show
 error = tk.Label(login_page ,text='KEYCARD ERROR - TRY AGAIN', font='Helvetica 26 bold', fg='red')
