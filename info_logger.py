@@ -29,33 +29,18 @@ def camera_settings(capture):
             ' - ' + str(capture.get(camera_setting))
         )
 
-def login(keycard_value, username):
-    '''This function writes the login information to the log'''
+def settings_access(keycard_value, username):
+    '''This function writes the settings_access information to the log'''
     logging.info(' ')
-    logging.info('Login success:')
+    logging.info('Settings Accessed:')
     logging.info('  Keycard Value: %s', keycard_value)
     logging.info('  Username: %s', username)
     logging.info('  Time: %s', datetime.datetime.now())
 
-def login_error(keycard_value):
-    '''This function writes failed login attempt information to the log'''
+def settings_access_error(keycard_value):
+    '''This function writes failed settings access attempt information to the log'''
     logging.error(' ')
-    logging.error('Login Fail:')
-    logging.error('  Keycard Value: %s', keycard_value)
-    logging.error('  Time: %s', datetime.datetime.now())
-
-def logout(keycard_value, username):
-    '''This function writes the logout information to the log'''
-    logging.info(' ')
-    logging.info('Logout success:')
-    logging.info('  Keycard Value: %s', keycard_value)
-    logging.info('  Username: %s', username)
-    logging.info('  Time: %s', datetime.datetime.now())
-
-def logout_error(keycard_value):
-    '''This function writes failed logout attempt information to the log'''
-    logging.error(' ')
-    logging.error('Logout Fail:')
+    logging.error('Settings Access Fail:')
     logging.error('  Keycard Value: %s', keycard_value)
     logging.error('  Time: %s', datetime.datetime.now())
 

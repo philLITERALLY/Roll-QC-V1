@@ -6,6 +6,7 @@ import cv2
 import datetime
 import fileinput
 import time
+import os
 
 # My Modules
 import info_logger
@@ -19,7 +20,7 @@ import variables
 
 # AIO DLL
 import clr
-AIO_DLL = clr.AddReference(R'C:\Users\Public\Documents\ACCES\PCIe-IDIO-24\Win32\C#\bin\Release\AIOWDMNet.dll')
+AIO_DLL = clr.AddReference(R'C:\Users\User\Roll-QC-V1\AIOWDMNet.dll')
 from AIOWDMNet import AIOWDM # pylint: disable=E0401
 AIO_INSTANCE = AIOWDM()
 
@@ -71,9 +72,12 @@ app = running_window.RunningWindow()
 app.start()
 
 while True:
-    # Set AIO to running (high on 8)
     if program_state.RUN_MODE:
+        # Set AIO to running (high on 8)
         AIO_INSTANCE.RelOutPort(0, 0, variables.IO_RUNNING)
+    elif program_state.CALIBRATE_MODE:
+        # Set AIO to empty
+        AIO_INSTANCE.RelOutPort(0, 0, 0)
 
     # Reload any config changes
     reload(config)
@@ -138,25 +142,8 @@ while True:
     if 'record' in config.DEV_MODE:
         OUT.write(CROPPED)
 
+    # Required for loop no need for key read
     k = cv2.waitKey(1) & 0xFF
-    if k == 13:
-        username = ''
-        
-        # Loop through users to find keycard value
-        for user in LOGINS:
-            if user[0] == KEYCARD_VALUE:
-                username = user[1]
-
-        # If keycard value exists and user found
-        if username != '':
-            info_logger.logout(KEYCARD_VALUE, username)
-            break
-        else:
-            info_logger.logout_error(KEYCARD_VALUE)
-
-        KEYCARD_VALUE = ''
-    elif k != 255 and k != 27:
-        KEYCARD_VALUE += chr(k)
 
     if program_state.STOP_PROGRAM == True:
         break

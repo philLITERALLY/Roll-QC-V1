@@ -18,7 +18,7 @@ def request_calibration(value):
     global REQUEST_CALIBRATE
     REQUEST_CALIBRATE = value
 
-def set_runmode(value):
+def set_run_mode(value):
     global RUN_MODE
     RUN_MODE = value
 

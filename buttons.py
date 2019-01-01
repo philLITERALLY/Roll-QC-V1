@@ -13,16 +13,16 @@ def resultsBtn(self):
         command=self.results_btn
     )
 
-def calibrateModeBtn(self):
+def calibrateModeBtn(self, settings_win):
     return Tkinter.Button(
-        self.root, 
-        text='CALIBRATE MODE', 
+        settings_win, 
+        text='CALIBRATE', 
         font='Helvetica 24 bold',
         width=20,
         height=5,
         bg='yellow',
         activebackground='yellow',
-        command=self.calibrate_mode_btn
+        command=self.calibrate_btn
     )
 
 def calibrateBtn(self):

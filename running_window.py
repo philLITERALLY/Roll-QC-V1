@@ -18,6 +18,8 @@ class RunningWindow(threading.Thread):
     def key(self, event):
         global KEYCARD_VALUE
         KEYCARD_VALUE += event.char
+        if event.keysym == 'Escape':
+            program_state.stop_program(True)
 
     def enter(self, event):
         global KEYCARD_VALUE
@@ -30,14 +32,42 @@ class RunningWindow(threading.Thread):
 
         # If keycard value exists and user found
         if username != '':
-            info_logger.logout(KEYCARD_VALUE, username)
-            
-            program_state.stop_program(True)        
-            self.root.quit()
+            info_logger.settings_access(KEYCARD_VALUE, username)
+
+            if username == 'Master':
+                self.settings_window(True)
+            else:
+                self.settings_window(False)
         else:
-            info_logger.logout_error(KEYCARD_VALUE)
+            info_logger.settings_access_error(KEYCARD_VALUE)
 
         KEYCARD_VALUE = ''
+
+    def settings_window(self, admin):
+        # If settings window not already open
+        if self.root.settings_win == None or not Tkinter.Toplevel.winfo_exists(self.root.settings_win):
+            # Stop Running and turn on calibrate mode
+            program_state.set_run_mode(False)
+            program_state.set_calibrate_mode(True)
+
+            # Create Settings Window
+            self.root.settings_win = Tkinter.Toplevel(self.root)
+            # Make Settings Window remain on top until destroyed, or attribute changes.
+            self.root.settings_win.attributes('-topmost', True)
+            self.root.settings_win.protocol('WM_DELETE_WINDOW', self.settings_window_close)
+
+            self.root.settings_win.placeholder_label = Tkinter.Label(self.root.settings_win, text="Settings Window Placeholder!")
+            self.root.settings_win.placeholder_label.pack()  
+
+            if admin == True:
+                self.root.settings_win.calibrateModeBtn = buttons.calibrateModeBtn(self, self.root.settings_win)
+                self.root.settings_win.calibrateModeBtn.pack()
+
+    def settings_window_close(self):
+        # Stop calibrate mode and start running again
+        program_state.set_calibrate_mode(False)
+        program_state.set_run_mode(True)
+        self.root.settings_win.destroy()
 
     def results_btn(self):
         os.system('results.csv')
@@ -50,13 +80,13 @@ class RunningWindow(threading.Thread):
         self.root.overrideredirect(1)
         self.root.attributes('-topmost', True)
 
+        # Create Placeholder for settings window
+        self.root.settings_win = None
+
         ws = self.root.winfo_screenwidth() # width of the screen
         hs = self.root.winfo_screenheight() # height of the screen
 
-        if program_state.ADMIN_USER == 'True':
-            w = 780 # width for the Tk root
-        else:
-            w = 390 # width for the Tk root
+        w = 390 # width for the Tk root
         h = 214 # height for the Tk root
 
         # calculate x and y coordinates for the Tk root window
@@ -68,18 +98,21 @@ class RunningWindow(threading.Thread):
 
         self.root.resultsBtn = buttons.resultsBtn(self)
         self.root.resultsBtn.pack(side=Tkinter.LEFT)
-
-        if program_state.ADMIN_USER == 'True':
-            self.root.calibrateModeBtn = buttons.calibrateModeBtn(self)
-            self.root.calibrateModeBtn.pack(side=Tkinter.LEFT)
         
         self.root.protocol('WM_DELETE_WINDOW', self.disable_close)
         self.root.bind('<Key>', self.key)
         self.root.bind('<Return>', self.enter)
+
+        self.root.deiconify()
         
         threading.Thread.__init__(self)
 
+    def take_focus(self):
+        self.root.focus_force()
+        self.root.after(1, lambda: self.take_focus())
+
     def run(self):
+        self.root.after(1, lambda: self.take_focus())
         self.root.mainloop()
 
     def disable_close(self):

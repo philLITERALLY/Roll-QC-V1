@@ -4,8 +4,8 @@
 import cv2
 
 # Calibration Settings
-PIXEL_WIDTHS = [380.0, 380.0, 380.0] # px
-PIXEL_HEIGHTS = [42.0, 42.0, 42.0] # px
+PIXEL_WIDTHS = [353.0, 1.0, 1.0] # px
+PIXEL_HEIGHTS = [43.0, 1.0, 1.0] # px
 
 # Camera Settings
 CAM_WIDTH = 1920
