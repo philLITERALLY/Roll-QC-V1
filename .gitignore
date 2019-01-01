@@ -16,7 +16,6 @@ ui.py
 ###################
 *.com
 *.class
-*.dll
 *.exe
 *.o
 *.so
