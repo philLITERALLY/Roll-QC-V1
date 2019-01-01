@@ -4,8 +4,8 @@
 import cv2
 
 # Calibration Settings
-PIXEL_WIDTHS = [353.0, 1.0, 1.0] # px
-PIXEL_HEIGHTS = [43.0, 1.0, 1.0] # px
+PIXEL_WIDTHS = [350.0, 350.0, 350.0] # px
+PIXEL_HEIGHTS = [43.0, 43.0, 43.0] # px
 
 # Camera Settings
 CAM_WIDTH = 1920
@@ -56,6 +56,7 @@ GREEN = (0, 255, 0)
 RED = (0, 0, 255)
 BLUE = (255, 0, 0)
 YELLOW = (0, 255, 255)
+WHITE = (255, 255, 255)
 PASS_FAIL_X = [88, 506, 924]
 PASS_FAIL_Y = [0, 100, 200]
 

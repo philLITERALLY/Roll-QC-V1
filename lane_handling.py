@@ -48,11 +48,11 @@ def running(lane, CROPPED, THRESHOLD_IMG, WIDTHS_ARR, HEIGHTS_ARR, FAIL_COUNTS, 
             AVG_HEIGHT = int(sum(AVG_HEIGHTS[i]) / float(len(AVG_HEIGHTS[i])))
             AVG_HEIGHTS_TEXT = "AVG HEIGHT: " + str(AVG_HEIGHT) + "mm"
 
-        cv2.putText(CROPPED, PASS_TEXT, (config.PASS_FAIL_X[i], TEXT_Y), config.FONT, 1, config.BLUE, 2)
-        cv2.putText(CROPPED, FAIL_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 30), config.FONT, 1, config.BLUE, 2)
-        cv2.putText(CROPPED, AVG_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 60), config.FONT, 1, config.BLUE, 2)
-        cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 90), config.FONT, 1, config.BLUE, 2)
-        cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 120), config.FONT, 1, config.BLUE, 2)
+        cv2.putText(CROPPED, PASS_TEXT, (config.PASS_FAIL_X[i], TEXT_Y), config.FONT, 1, config.WHITE, 2)
+        cv2.putText(CROPPED, FAIL_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 30), config.FONT, 1, config.WHITE, 2)
+        cv2.putText(CROPPED, AVG_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 60), config.FONT, 1, config.WHITE, 2)
+        cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 90), config.FONT, 1, config.WHITE, 2)
+        cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 120), config.FONT, 1, config.WHITE, 2)
 
 def calibrate(lane, CROPPED, THRESHOLD_IMG, request_calibrate, CALIB_WIDTHS, CALIB_HEIGHTS):
     # If no array exists to gather size info create
