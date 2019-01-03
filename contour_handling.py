@@ -3,6 +3,7 @@
 # External Libraries
 import cv2      # OpenCV
 import time
+import numpy as np
 
 # AIO DLL
 import clr
@@ -16,7 +17,13 @@ import info_logger
 import variables
 
 def running(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, PASS_COUNTS, FAIL, PASS, AVG_WIDTHS, AVG_HEIGHTS):
-    x, y, w, h = cv2.boundingRect(contour)
+    rect = cv2.minAreaRect(contour)
+    box = cv2.boxPoints(rect)
+    x = rect[0][0]
+    y = rect[0][1]
+    w = rect[1][0]
+    h = rect[1][1]
+    box = np.int64(box)
     color = config.GREEN
 
     leading_edge = y + h
@@ -27,7 +34,6 @@ def running(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, 
         WIDTHS_ARR[lane].append(w)
         HEIGHTS_ARR[lane].append(h)
 
-        pixel_dimensions = '{0}px x {1}px'.format(w, h)
         calc_dimensions = config.dimension_calc(lane, w, h)
 
         if w < config.LANE_FAIL_WIDTHS_LOW[lane] or \
@@ -36,15 +42,12 @@ def running(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, 
             h > config.LANE_FAIL_HEIGHTS_HIGH[lane]:
             color = config.RED
 
-        cv2.rectangle(ORIG_LANE_IMG, (x, y), (x+w, y+h), color, 2)
-        cv2.putText(ORIG_LANE_IMG, calc_dimensions, (x, y), config.FONT, 1, color, 2)
-
-        if 'pixels' in config.DEV_MODE:
-            cv2.putText(ORIG_LANE_IMG, pixel_dimensions, (x, y + h), config.FONT, 1, config.BLUE, 2)
+        cv2.drawContours(ORIG_LANE_IMG, [box], 0, color, 2)
+        cv2.putText(ORIG_LANE_IMG, calc_dimensions, (int(x - (w/2)), int(y - (h/2))), config.FONT, 1, color, 2)
 
     # If blob is leaving scan section we average sizes and determine pass/fail
     elif leading_edge > exiting_box and (WIDTHS_ARR[lane] or HEIGHTS_ARR[lane]):
-        cv2.rectangle(ORIG_LANE_IMG, (x, y), (x+w, y+h), config.BLUE, 2)
+        cv2.drawContours(ORIG_LANE_IMG, [box], 0, config.BLUE, 2)
 
         for index in range(config.LANE_COUNT):
             average_width = 0
@@ -92,8 +95,14 @@ def running(lane, contour, WIDTHS_ARR, HEIGHTS_ARR, ORIG_LANE_IMG, FAIL_COUNTS, 
         HEIGHTS_ARR[lane] = []
 
 def calibrate(lane, contour, ORIG_LANE_IMG, request_calibrate, CALIB_WIDTHS, CALIB_HEIGHTS):
-    x, y, w, h = cv2.boundingRect(contour)
-    color = config.BLUE
+    rect = cv2.minAreaRect(contour)
+    box = cv2.boxPoints(rect)
+    x = int(rect[0][0])
+    y = int(rect[0][1])
+    w = int(rect[1][0])
+    h = int(rect[1][1])
+    box = np.int64(box)
+    color = config.RED
 
     leading_edge = y + h
     exiting_box = config.LANE_HEIGHT - config.EDGE_GAP
@@ -103,10 +112,12 @@ def calibrate(lane, contour, ORIG_LANE_IMG, request_calibrate, CALIB_WIDTHS, CAL
         pixel_dimensions = '{0}px x {1}px'.format(w, h)
         calc_dimensions = config.dimension_calc(lane, w, h)
 
-        cv2.rectangle(ORIG_LANE_IMG, (x, y), (x+w, y+h), color, 2)
-        cv2.putText(ORIG_LANE_IMG, calc_dimensions, (x, y), config.FONT, 1, color, 2)
-
-        cv2.putText(ORIG_LANE_IMG, pixel_dimensions, (x, y + h), config.FONT, 1, config.BLUE, 2)
+        start_pos = int(x - (w/2))
+        high_pos = int(y - (h/2))
+        low_pos = int(y + (h/2))
+        cv2.drawContours(ORIG_LANE_IMG, [box], 0, color, 2)
+        cv2.putText(ORIG_LANE_IMG, calc_dimensions, (start_pos, high_pos), config.FONT, 1, color, 2)
+        cv2.putText(ORIG_LANE_IMG, pixel_dimensions, (start_pos, low_pos), config.FONT, 1, color, 2)
        
         if request_calibrate:
             CALIB_WIDTHS[lane] = float(w)
