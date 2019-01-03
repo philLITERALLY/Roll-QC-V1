@@ -134,9 +134,12 @@ while True:
     # get the size of the screen
     width, height = 1280, 1024
     window_name = 'LINE VIEW'
-    cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
-    cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-    cv2.imshow(window_name, CROPPED)
+    if program_state.THRESH_MODE:
+        cv2.destroyWindow(window_name)
+    else:
+        cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
+        cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.imshow(window_name, CROPPED)
 
     # write the frame
     if 'record' in config.DEV_MODE:

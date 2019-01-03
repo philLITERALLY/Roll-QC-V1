@@ -38,7 +38,7 @@ def CALCULATE_IO_VALUE(VALUES):
 
 # Changes value IO array
 def CALCULATE_FROM_IO_VALUE(VALUE):
-    VALUE = "{0:#b}".format(VALUE)
+    VALUE = '{0:#b}'.format(VALUE)
     
     # reverse binary
     VALUE[::-1]

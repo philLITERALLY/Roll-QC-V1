@@ -6,6 +6,7 @@ import cv2      # OpenCV
 # My Modules
 import config
 import contour_handling
+import program_state
 
 TEXT_Y = config.LANE_HEIGHT_END[0] - config.EDGE_GAP + 30
 
@@ -17,9 +18,6 @@ def running(lane, CROPPED, THRESHOLD_IMG, WIDTHS_ARR, HEIGHTS_ARR, FAIL_COUNTS, 
 
     ORIG_LANE_IMG = CROPPED[config.LANE_HEIGHT_START[lane]:config.LANE_HEIGHT_END[lane], config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
     THRESH_LANE_IMG = THRESHOLD_IMG[config.LANE_HEIGHT_START[lane]:config.LANE_HEIGHT_END[lane], config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
-
-    if 'thresh' in config.DEV_MODE:
-        cv2.imshow('THRESH' + str(lane), THRESH_LANE_IMG)
     
     # run opencv find contours, only external boxes
     _, CONTOURS, _ = cv2.findContours(THRESH_LANE_IMG, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -31,22 +29,22 @@ def running(lane, CROPPED, THRESHOLD_IMG, WIDTHS_ARR, HEIGHTS_ARR, FAIL_COUNTS, 
 
     # Show Pass Fail Rate for each	
     for i in range(config.LANE_COUNT):        
-        PASS_TEXT = "PASS: " + str(PASS_COUNTS[i])
-        FAIL_TEXT = "FAIL: " + str(FAIL_COUNTS[i])
+        PASS_TEXT = 'PASS: ' + str(PASS_COUNTS[i])
+        FAIL_TEXT = 'FAIL: ' + str(FAIL_COUNTS[i])
 
-        AVG_TEXT = "AVG: 0%"
+        AVG_TEXT = 'AVG: 0%'
         if PASS_COUNTS[i] > 0:
-            AVG_TEXT = "AVG: " + str(100 * PASS_COUNTS[i] / (PASS_COUNTS[i] + FAIL_COUNTS[i])) + "%"
+            AVG_TEXT = 'AVG: ' + str(100 * PASS_COUNTS[i] / (PASS_COUNTS[i] + FAIL_COUNTS[i])) + '%'
 
-        AVG_WIDTHS_TEXT = ""
+        AVG_WIDTHS_TEXT = ''
         if len(AVG_WIDTHS[i]) > 0:
             AVG_WIDTH = int(sum(AVG_WIDTHS[i]) / float(len(AVG_WIDTHS[i])))
-            AVG_WIDTHS_TEXT = "AVG WIDTH: " + str(AVG_WIDTH) + "mm"
+            AVG_WIDTHS_TEXT = 'AVG WIDTH: ' + str(AVG_WIDTH) + 'mm'
 
-        AVG_HEIGHTS_TEXT = ""
+        AVG_HEIGHTS_TEXT = ''
         if len(AVG_HEIGHTS[i]) > 0:
             AVG_HEIGHT = int(sum(AVG_HEIGHTS[i]) / float(len(AVG_HEIGHTS[i])))
-            AVG_HEIGHTS_TEXT = "AVG HEIGHT: " + str(AVG_HEIGHT) + "mm"
+            AVG_HEIGHTS_TEXT = 'AVG HEIGHT: ' + str(AVG_HEIGHT) + 'mm'
 
         cv2.putText(CROPPED, PASS_TEXT, (config.PASS_FAIL_X[i], TEXT_Y), config.FONT, 1, config.WHITE, 2)
         cv2.putText(CROPPED, FAIL_TEXT, (config.PASS_FAIL_X[i], TEXT_Y + 30), config.FONT, 1, config.WHITE, 2)
@@ -63,7 +61,10 @@ def calibrate(lane, CROPPED, THRESHOLD_IMG, request_calibrate, CALIB_WIDTHS, CAL
     ORIG_LANE_IMG = CROPPED[config.LANE_HEIGHT_START[lane]:config.LANE_HEIGHT_END[lane], config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
     THRESH_LANE_IMG = THRESHOLD_IMG[config.LANE_HEIGHT_START[lane]:config.LANE_HEIGHT_END[lane], config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
 
-    if 'thresh' in config.DEV_MODE:
+    if program_state.THRESH_MODE:
+        window_name = 'THRESH' + str(lane)
+        cv2.namedWindow(window_name)
+        cv2.moveWindow(window_name, config.LANE_WIDTH_START[lane] - 68, 500)
         cv2.imshow('THRESH' + str(lane), THRESH_LANE_IMG)
     
     # run opencv find contours, only external boxes

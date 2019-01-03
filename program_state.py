@@ -4,6 +4,7 @@ RUN_MODE = True
 STOP_PROGRAM = False
 ADMIN_USER = False
 CALIBRATE_MODE = False
+THRESH_MODE = False
 REQUEST_CALIBRATE = False
 
 def set_admin_user(value):
@@ -13,6 +14,10 @@ def set_admin_user(value):
 def set_calibrate_mode(value):
     global CALIBRATE_MODE
     CALIBRATE_MODE = value
+
+def set_thresh(value):
+    global THRESH_MODE
+    THRESH_MODE = value
 
 def request_calibration(value):
     global REQUEST_CALIBRATE

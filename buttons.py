@@ -25,14 +25,14 @@ def calibrateModeBtn(self, settings_win):
         command=self.calibrate_btn
     )
 
-def calibrateBtn(self):
+def threshModeBtn(self, settings_win):
     return Tkinter.Button(
-        self.root, 
-        text='CALIBRATE', 
+        settings_win,
+        text='THRESH MODE',
         font='Helvetica 24 bold',
         width=20,
         height=5,
-        bg='green',
-        activebackground='green',
-        command=self.calibrate_btn
+        bg='blue',
+        activebackground='blue',
+        command=self.thresh_btn
     )

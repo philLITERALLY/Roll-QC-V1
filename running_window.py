@@ -4,12 +4,14 @@
 import threading
 import Tkinter
 import os
+import cv2
 
 # Main Variables 
 import program_state
 import get_logins
 import info_logger
 import buttons
+import config
 
 LOGINS = get_logins.main()
 KEYCARD_VALUE = ''
@@ -56,16 +58,20 @@ class RunningWindow(threading.Thread):
             self.root.settings_win.attributes('-topmost', True)
             self.root.settings_win.protocol('WM_DELETE_WINDOW', self.settings_window_close)
 
-            self.root.settings_win.placeholder_label = Tkinter.Label(self.root.settings_win, text="Settings Window Placeholder!")
+            self.root.settings_win.placeholder_label = Tkinter.Label(self.root.settings_win, text='Settings Window Placeholder!')
             self.root.settings_win.placeholder_label.pack()  
 
             if admin == True:
                 self.root.settings_win.calibrateModeBtn = buttons.calibrateModeBtn(self, self.root.settings_win)
                 self.root.settings_win.calibrateModeBtn.pack()
 
+                self.root.settings_win.threshModeBtn = buttons.threshModeBtn(self, self.root.settings_win)
+                self.root.settings_win.threshModeBtn.pack()
+
     def settings_window_close(self):
         # Stop calibrate mode and start running again
         program_state.set_calibrate_mode(False)
+        program_state.set_thresh(False)
         program_state.set_run_mode(True)
         self.root.settings_win.destroy()
 
@@ -74,6 +80,17 @@ class RunningWindow(threading.Thread):
 
     def calibrate_btn(self):
         program_state.request_calibration(True)
+
+    def thresh_btn(self):
+        if (self.root.settings_win.threshModeBtn.cget('text') == 'THRESH MODE') :
+                program_state.set_thresh(True)
+                self.root.settings_win.threshModeBtn.configure(bg='red', activebackground='red', text='STOP THRESH MODE')
+
+        elif (self.root.settings_win.threshModeBtn.cget('text') == 'STOP THRESH MODE') :
+                program_state.set_thresh(False)
+                for i in range(config.LANE_COUNT):        
+                    cv2.destroyWindow('THRESH' + str(i))
+                self.root.settings_win.threshModeBtn.configure(bg='blue', activebackground='blue', text='THRESH MODE')
 
     def __init__(self):
         self.root = Tkinter.Tk()

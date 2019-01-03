@@ -4,8 +4,8 @@
 import cv2
 
 # Calibration Settings
-PIXEL_WIDTHS = [350.0, 350.0, 350.0] # px
-PIXEL_HEIGHTS = [43.0, 43.0, 43.0] # px
+PIXEL_WIDTHS = [363.0, 374.0, 383.0] # px
+PIXEL_HEIGHTS = [42.0, 46.0, 45.0] # px
 
 # Camera Settings
 CAM_WIDTH = 1920
@@ -28,13 +28,13 @@ FRAME_HEIGHT_END = CAM_HEIGHT_MIDPOINT + HALF_FRAME_HEIGHT
 
 # Lane Settings
 LANE_COUNT = 3
-LANE_WIDTH = 420
-LANE_HEIGHT = 200
-LANE_WIDTH_START = [68, 486, 904] # Creating manually for now
-LANE_WIDTH_END = [486, 904, 1322]
+LANE_WIDTH = 445
+LANE_HEIGHT = 190
+LANE_WIDTH_START = [68, 513, 958] # Creating manually for now
+LANE_WIDTH_END = [513, 958, 1403]
 LANE_HEIGHT_START = [460, 460, 460]
 LANE_HEIGHT_END = [650, 650, 650]
-EDGE_GAP = 40 # How far roll has to be in to count
+EDGE_GAP = 10 # How far roll has to be in to count
 
 # Setup bounding box
 LANE_X1 = LANE_WIDTH_START[0]
@@ -57,7 +57,7 @@ RED = (0, 0, 255)
 BLUE = (255, 0, 0)
 YELLOW = (0, 255, 255)
 WHITE = (255, 255, 255)
-PASS_FAIL_X = [88, 506, 924]
+PASS_FAIL_X = [68, 516, 954]
 PASS_FAIL_Y = [0, 100, 200]
 
 # Threshold Settings
