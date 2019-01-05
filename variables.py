@@ -23,8 +23,14 @@ CAMERA_VARIABLES = [
 ]
 
 IO_RUNNING = 256 # Output 8 set high
-IO_REQUEST = 1280 # Outputs 8 and 10 set high
-IO_ACK = 1 # Input 1 set high
+IO_LANE1_REQUEST = 768 # Outputs 8 and 9 set high
+IO_LANE2_REQUEST = 1280 # Outputs 8 and 10 set high
+IO_LANE3_REQUEST = 2304 # Outputs 8 and 11 set high
+IO_REQUEST = [IO_LANE1_REQUEST, IO_LANE2_REQUEST, IO_LANE3_REQUEST]
+IO_LANE1_ACK = 1 # Input 0 set high
+IO_LANE2_ACK = 2 # Input 1 set high
+IO_LANE3_ACK = 4 # Input 2 set high
+IO_ACK = [IO_LANE1_ACK, IO_LANE2_ACK, IO_LANE3_ACK]
 
 # Changes IO array to value
 def CALCULATE_IO_VALUE(VALUES):

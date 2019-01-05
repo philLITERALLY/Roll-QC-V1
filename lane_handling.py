@@ -8,7 +8,7 @@ import config
 import contour_handling
 import program_state
 
-TEXT_Y = config.LANE_HEIGHT_END[0] - config.EDGE_GAP + 30
+TEXT_Y = config.LANE_HEIGHT_END - config.EDGE_GAP + 30
 
 def running(lane, CROPPED, THRESHOLD_IMG, WIDTHS_ARR, HEIGHTS_ARR, FAIL_COUNTS, PASS_COUNTS, LANE_FAIL, LANE_PASS, AVG_WIDTHS, AVG_HEIGHTS):
     # If no array exists to gather size info create
@@ -16,8 +16,8 @@ def running(lane, CROPPED, THRESHOLD_IMG, WIDTHS_ARR, HEIGHTS_ARR, FAIL_COUNTS, 
         WIDTHS_ARR.append([])
         HEIGHTS_ARR.append([])
 
-    ORIG_LANE_IMG = CROPPED[config.LANE_HEIGHT_START[lane]:config.LANE_HEIGHT_END[lane], config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
-    THRESH_LANE_IMG = THRESHOLD_IMG[config.LANE_HEIGHT_START[lane]:config.LANE_HEIGHT_END[lane], config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
+    ORIG_LANE_IMG = CROPPED[config.LANE_HEIGHT_START:config.LANE_HEIGHT_END, config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
+    THRESH_LANE_IMG = THRESHOLD_IMG[config.LANE_HEIGHT_START:config.LANE_HEIGHT_END, config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
     
     # run opencv find contours, only external boxes
     _, CONTOURS, _ = cv2.findContours(THRESH_LANE_IMG, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -58,8 +58,8 @@ def calibrate(lane, CROPPED, THRESHOLD_IMG, request_calibrate, CALIB_WIDTHS, CAL
         CALIB_WIDTHS.append(1.0)
         CALIB_HEIGHTS.append(1.0)
         
-    ORIG_LANE_IMG = CROPPED[config.LANE_HEIGHT_START[lane]:config.LANE_HEIGHT_END[lane], config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
-    THRESH_LANE_IMG = THRESHOLD_IMG[config.LANE_HEIGHT_START[lane]:config.LANE_HEIGHT_END[lane], config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
+    ORIG_LANE_IMG = CROPPED[config.LANE_HEIGHT_START:config.LANE_HEIGHT_END, config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
+    THRESH_LANE_IMG = THRESHOLD_IMG[config.LANE_HEIGHT_START:config.LANE_HEIGHT_END, config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
 
     if program_state.THRESH_MODE:
         window_name = 'THRESH' + str(lane)
