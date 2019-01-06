@@ -9,6 +9,8 @@ import info_logger
 
 def main():
     '''Initialise and apply camera settings'''
+    reload(config) # Reload any config changes
+
     capture = cv2.VideoCapture(0)
     capture.set(3, config.CAM_WIDTH)
     capture.set(4, config.CAM_HEIGHT)

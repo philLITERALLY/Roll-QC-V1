@@ -44,13 +44,12 @@ def settings_access_error(keycard_value):
     logging.error('  Keycard Value: %s', keycard_value)
     logging.error('  Time: %s', datetime.datetime.now())
 
-def result(pass_counts, fail_counts):
+def result(lane, width, height):
     '''This adds a row result to CSV file'''
     row = [str(datetime.datetime.now())]
-
-    for i in range(config.LANE_COUNT):
-        row.append(str(pass_counts[i]))
-        row.append(str(fail_counts[i]))
+    row.append(str(lane))
+    row.append(str(width))
+    row.append(str(height))
 
     with open('results.csv', 'ab') as csvFile:
         writer = csv.writer(csvFile)

@@ -1,5 +1,8 @@
 '''This module contains any variables required for the program to run'''
 
+# My modules
+import config
+
 CAMERA_VARIABLES = [
     'CAP_PROP_POS_MSEC',
     'CAP_PROP_POS_FRAMES',
@@ -34,20 +37,31 @@ IO_ACK = [IO_LANE1_ACK, IO_LANE2_ACK, IO_LANE3_ACK]
 
 # Changes IO array to value
 def CALCULATE_IO_VALUE(VALUES):
+    returnVal = VALUES[:]
+
     # reverse array
-    VALUES.reverse()
+    returnVal.reverse()
     # turn array into string
-    VALUES = ''.join(map(str, VALUES))
+    returnVal = ''.join(map(str, returnVal))
 
     # return binary string converted to decimal
-    return int(VALUES, 2)
+    return int(returnVal, 2)
 
 # Changes value IO array
 def CALCULATE_FROM_IO_VALUE(VALUE):
     VALUE = '{0:#b}'.format(VALUE)
-    
+
     # reverse binary
     VALUE[::-1]
 
     # return binary string converted to decimal
     print(VALUE)
+
+def is_pass(lane, width, height):
+    if width < config.LANE_FAIL_WIDTHS_LOW[lane] or \
+       width > config.LANE_FAIL_WIDTHS_HIGH[lane] or \
+       height < config.LANE_FAIL_HEIGHTS_LOW[lane] or \
+       height > config.LANE_FAIL_HEIGHTS_HIGH[lane]:
+        return False
+    else:
+        return True
