@@ -90,6 +90,7 @@ class aioThread (threading.Thread):
 
     def run(self):
         global AIO_ACTIONS, OUTPUT
+        LAST_OUTPUT = []
         while not program_state.STOP_PROGRAM:
             if program_state.RUN_MODE:
                 # Set AIO to running (high on 8) and any pulses
@@ -105,7 +106,10 @@ class aioThread (threading.Thread):
                 # Set AIO to stop
                 OUTPUT = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-            AIO_INSTANCE.RelOutPort(0, 0, variables.CALCULATE_IO_VALUE(OUTPUT))
+            # Only send update if it is different than last value
+            if OUTPUT != LAST_OUTPUT:
+                AIO_INSTANCE.RelOutPort(0, 0, variables.CALCULATE_IO_VALUE(OUTPUT))
+                LAST_OUTPUT = OUTPUT[:]
 
 class statsThread (threading.Thread):
     ''' Master '''
@@ -159,12 +163,8 @@ class statsThread (threading.Thread):
                         # Calculate AVG width and height
                         AVG_WIDTHS_CURRENT[lane] = self.calculate_avg(AVG_WIDTHS_CURRENT[lane], w)
                         AVG_HEIGHTS_CURRENT[lane] = self.calculate_avg(AVG_HEIGHTS_CURRENT[lane], h)
-                    except:
-                        print "LANE" + str(lane) + " BROKEN RECT"
-                        print "current_rect" + str(current_rect)
-                        print "len current_rect" + str(len(current_rect))
-                        print "RECTS_ARR" + str(RECTS_ARR)
-                        print "len RECTS_ARR" + str(len(RECTS_ARR))
+                    except Exception as e:
+                        info_logger.stats_error(lane, current_rect, RECTS_ARR, e)
 
                 # If no blob is detected
                 elif AVG_WIDTHS_CURRENT[lane][0] > 0 and AVG_HEIGHTS_CURRENT[lane][0] > 0:
@@ -185,7 +185,7 @@ class statsThread (threading.Thread):
                         PASS_COUNTS[lane] += 1
                         LANE_FLAG[lane] = 'Pass'
 
-                    info_logger.result(lane, int(average_width), int(average_height))
+                    info_logger.result(lane + 1, int(average_width), int(average_height))
 
                     # Reset arrays
                     AVG_WIDTHS_CURRENT[lane] = [0, 0]
@@ -299,6 +299,12 @@ class imgProc (threading.Thread):
             # Show current AIO
             cv2.putText(CROPPED, "OUTPUT: " + str(OUTPUT), (350, 50), config.FONT, 1, config.RED, 2)
 
+            # Show min/max values
+            cv2.putText(CROPPED, "MIN WIDTH: " + str(int(config.FAIL_WIDTH_LOW)) + "mm", (50, 900), config.FONT, 1, config.RED, 2)
+            cv2.putText(CROPPED, "MAX WIDTH: " + str(int(config.FAIL_WIDTH_HIGH)) + "mm", (50, 950), config.FONT, 1, config.RED, 2)
+            cv2.putText(CROPPED, "MIN HEIGHT: " + str(int(config.FAIL_HEIGHT_LOW)) + "mm", (50, 1000), config.FONT, 1, config.RED, 2)
+            cv2.putText(CROPPED, "MAX HEIGHT: " + str(int(config.FAIL_HEIGHT_HIGH)) + "mm", (50, 1050), config.FONT, 1, config.RED, 2)
+
             window_name = 'LINE VIEW'
             if DISPLAY_IMG != []:
                 cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
@@ -332,9 +338,8 @@ class laneThread (threading.Thread):
             if CONTOURS:
                 try:
                     contour = max(CONTOURS, key=cv2.contourArea) # find the biggest area
-                except:
-                    print "LANE" + str(lane) + " BROKEN CONTOURS"
-                    print CONTOURS
+                except Exception as e:
+                    info_logger.lane_error(lane, CONTOURS, e)
 
                 rect = cv2.minAreaRect(contour)
                 box = cv2.boxPoints(rect)[:]
