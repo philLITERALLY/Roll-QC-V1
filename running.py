@@ -170,6 +170,7 @@ class statsThread (threading.Thread):
                 elif AVG_WIDTHS_CURRENT[lane][0] > 0 and AVG_HEIGHTS_CURRENT[lane][0] > 0:
                     average_width = AVG_WIDTHS_CURRENT[lane][0]
                     average_height = AVG_HEIGHTS_CURRENT[lane][0]
+                    frames_scanned = AVG_WIDTHS_CURRENT[lane][1]
 
                     # Calculate total AVG width and height
                     AVG_WIDTHS_TOTAL[lane] = self.calculate_avg(AVG_WIDTHS_TOTAL[lane], average_width)
@@ -185,7 +186,7 @@ class statsThread (threading.Thread):
                         PASS_COUNTS[lane] += 1
                         LANE_FLAG[lane] = 'Pass'
 
-                    info_logger.result(lane + 1, int(average_width), int(average_height))
+                    info_logger.result(lane + 1, int(average_width), int(average_height), frames_scanned)
 
                     # Reset arrays
                     AVG_WIDTHS_CURRENT[lane] = [0, 0]
@@ -284,13 +285,13 @@ class imgProc (threading.Thread):
                 AVG_HEIGHTS_TEXT = 'AVG HEIGHT: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * config.HEIGHT_RATIOS[lane])) + 'mm'
                 if PASS_COUNTS[lane] > 0:
                     AVG_TEXT = 'AVG: ' + str(100 * PASS_COUNTS[lane] / (PASS_COUNTS[lane] + FAIL_COUNTS[lane])) + '%'
-                cv2.putText(CROPPED, "PASS: " + str(PASS_COUNTS[lane]), (config.PASS_FAIL_X[lane], config.TEXT_Y), config.FONT, 1, config.WHITE, 2)
-                cv2.putText(CROPPED, "FAIL: " + str(FAIL_COUNTS[lane]), (config.PASS_FAIL_X[lane], config.TEXT_Y + 30), config.FONT, 1, config.WHITE, 2)
-                cv2.putText(CROPPED, AVG_TEXT, (config.PASS_FAIL_X[lane], config.TEXT_Y + 60), config.FONT, 1, config.WHITE, 2)
+                cv2.putText(CROPPED, "PASS: " + str(PASS_COUNTS[lane]), (config.PASS_FAIL_X[lane], config.TEXT_Y), config.FONT, 1, config.RED, 2)
+                cv2.putText(CROPPED, "FAIL: " + str(FAIL_COUNTS[lane]), (config.PASS_FAIL_X[lane], config.TEXT_Y + 30), config.FONT, 1, config.RED, 2)
+                cv2.putText(CROPPED, AVG_TEXT, (config.PASS_FAIL_X[lane], config.TEXT_Y + 60), config.FONT, 1, config.RED, 2)
                 if AVG_WIDTHS_TOTAL[lane][0] > 0:
-                    cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (config.PASS_FAIL_X[lane], config.TEXT_Y + 90), config.FONT, 1, config.WHITE, 2)
+                    cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (config.PASS_FAIL_X[lane], config.TEXT_Y + 90), config.FONT, 1, config.RED, 2)
                 if AVG_HEIGHTS_TOTAL[lane][0] > 0:
-                    cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (config.PASS_FAIL_X[lane], config.TEXT_Y + 120), config.FONT, 1, config.WHITE, 2)
+                    cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (config.PASS_FAIL_X[lane], config.TEXT_Y + 120), config.FONT, 1, config.RED, 2)
 
             # Show Lane Boundaries
             cv2.rectangle(CROPPED, (config.LANE_X1, config.LANE_Y1), (config.LANE_X2, config.LANE_Y2), config.YELLOW, 2)
@@ -300,10 +301,14 @@ class imgProc (threading.Thread):
             cv2.putText(CROPPED, "OUTPUT: " + str(OUTPUT), (350, 50), config.FONT, 1, config.RED, 2)
 
             # Show min/max values
-            cv2.putText(CROPPED, "MIN WIDTH: " + str(int(config.FAIL_WIDTH_LOW)) + "mm", (50, 900), config.FONT, 1, config.RED, 2)
-            cv2.putText(CROPPED, "MAX WIDTH: " + str(int(config.FAIL_WIDTH_HIGH)) + "mm", (50, 950), config.FONT, 1, config.RED, 2)
-            cv2.putText(CROPPED, "MIN HEIGHT: " + str(int(config.FAIL_HEIGHT_LOW)) + "mm", (50, 1000), config.FONT, 1, config.RED, 2)
-            cv2.putText(CROPPED, "MAX HEIGHT: " + str(int(config.FAIL_HEIGHT_HIGH)) + "mm", (50, 1050), config.FONT, 1, config.RED, 2)
+            max_length = "Max Length = " + str(int(config.FAIL_WIDTH_HIGH)) + "mm   "
+            min_length = "Min Length = " + str(int(config.FAIL_WIDTH_LOW)) + "mm    "
+            max_thickness = "Max Thickness = " + str(int(config.FAIL_HEIGHT_HIGH)) + "mm"
+            min_thickness = "Min Thickness = " + str(int(config.FAIL_HEIGHT_LOW)) + "mm"
+            cv2.putText(CROPPED, "Current REJECT settings:-", (230, 950), config.FONT, 1, config.RED, 2)
+            cv2.line(CROPPED, (50, 965), (840, 965), config.RED, 2)
+            cv2.putText(CROPPED, max_length + max_thickness, (50, 1000), config.FONT, 1, config.RED, 2)
+            cv2.putText(CROPPED, min_length + min_thickness, (50, 1050), config.FONT, 1, config.RED, 2)
 
             window_name = 'LINE VIEW'
             if DISPLAY_IMG != []:

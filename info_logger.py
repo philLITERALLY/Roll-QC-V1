@@ -44,12 +44,13 @@ def settings_access_error(keycard_value):
     logging.error('  Keycard Value: %s', keycard_value)
     logging.error('  Time: %s', datetime.datetime.now())
 
-def result(lane, width, height):
+def result(lane, width, height, frames):
     ''' This adds a row result to CSV file '''
-    row = [str(datetime.datetime.now())]
+    row = [str(datetime.datetime.now().strftime('%d/%m/%y %H:%M:%S'))]
     row.append(str(lane))
-    row.append(str(width))
-    row.append(str(height))
+    row.append(str(int(width / config.WIDTH_RATIOS[lane])))
+    row.append(str(int(height / config.HEIGHT_RATIOS[lane])))
+    row.append(str(frames))
 
     with open('results.csv', 'ab') as csvFile:
         writer = csv.writer(csvFile)

@@ -6,7 +6,7 @@ import Tkinter
 import os
 import cv2
 
-# Main Variables 
+# Main Variables
 import program_state
 import get_logins
 import info_logger
@@ -26,7 +26,7 @@ class RunningWindow(threading.Thread):
     def enter(self, event):
         global KEYCARD_VALUE
         username = ''
-        
+
         # Loop through users to find keycard value
         for user in LOGINS:
             if user[0] == KEYCARD_VALUE:
@@ -45,6 +45,27 @@ class RunningWindow(threading.Thread):
 
         KEYCARD_VALUE = ''
 
+    def change_config_value(self, type, value):
+        lines = open('config.py', 'r').readlines() # open config file
+
+        if type == 'Thresh':
+            lines[64] = 'WHITE_THRESH = ' + str(value) + '\n'
+        elif type == 'WidthLow':
+            lines[66] = 'FAIL_WIDTH_LOW = ' + str(value) + ' # mm\n'
+        elif type == 'WidthHigh':
+            lines[67] = 'FAIL_WIDTH_HIGH = ' + str(value) + ' # mm\n'
+        elif type == 'HeightLow':
+            lines[68] = 'FAIL_HEIGHT_LOW = ' + str(value) + ' # mm\n'
+        elif type == 'HeightHigh':
+            lines[69] = 'FAIL_HEIGHT_HIGH = ' + str(value) + ' # mm\n'
+
+        out = open('config.py', 'w')
+        out.writelines(lines)
+        out.close()
+
+        read = open('config.py', 'a')
+        read.close()
+
     def settings_window(self, admin):
         # If settings window not already open
         if self.root.settings_win == None or not Tkinter.Toplevel.winfo_exists(self.root.settings_win):
@@ -58,15 +79,69 @@ class RunningWindow(threading.Thread):
             self.root.settings_win.attributes('-topmost', True)
             self.root.settings_win.protocol('WM_DELETE_WINDOW', self.settings_window_close)
 
-            self.root.settings_win.placeholder_label = Tkinter.Label(self.root.settings_win, text='Settings Window Placeholder!')
-            self.root.settings_win.placeholder_label.pack()  
+            # Setup max length value + buttons
+            self.root.settings_win.max_length_label = \
+                buttons.createLabel(self.root.settings_win, 'Max Length')
+            self.root.settings_win.max_length_label.grid(row=0, column=0, columnspan=4, sticky='w,e,n,s')
+            self.root.settings_win.max_length_value = \
+                buttons.createLabel(self.root.settings_win, config.FAIL_WIDTH_HIGH)
+            self.root.settings_win.max_length_value.grid(row=1, column=1, columnspan=2, sticky='w,e,n,s')
+            self.root.settings_win.max_length_minus = \
+                buttons.createBtn(self.root.settings_win, '-', self.change_config_value('WidthHigh', config.FAIL_WIDTH_HIGH - 1))
+            self.root.settings_win.max_length_minus.grid(row=1, column=0)
+            self.root.settings_win.max_length_plus = \
+                buttons.createBtn(self.root.settings_win, '+', self.change_config_value('WidthHigh', config.FAIL_WIDTH_HIGH + 1))
+            self.root.settings_win.max_length_plus.grid(row=1, column=3)
+
+            # Setup min length value + buttons
+            self.root.settings_win.min_length_label = buttons.createLabel(self.root.settings_win, 'Min Length (mm)')
+            self.root.settings_win.min_length_label.grid(row=2, column=0, columnspan=4, sticky='w,e,n,s')
+            self.root.settings_win.min_length_value = buttons.createLabel(self.root.settings_win, config.FAIL_WIDTH_LOW)
+            self.root.settings_win.min_length_value.grid(row=3, column=1, columnspan=2, sticky='w,e,n,s')
+            self.root.settings_win.min_length_minus = buttons.createBtn(self.root.settings_win, '-', self.settings_window_close)
+            self.root.settings_win.min_length_minus.grid(row=3, column=0)
+            self.root.settings_win.min_length_plus = buttons.createBtn(self.root.settings_win, '+', self.settings_window_close)
+            self.root.settings_win.min_length_plus.grid(row=3, column=3)
+
+            # Setup max thickness value + buttons
+            self.root.settings_win.max_thickness_label = buttons.createLabel(self.root.settings_win, 'Max Thickness (mm)')
+            self.root.settings_win.max_thickness_label.grid(row=4, column=0, columnspan=4, sticky='w,e,n,s')
+            self.root.settings_win.max_thickness_value = buttons.createLabel(self.root.settings_win, config.FAIL_HEIGHT_HIGH)
+            self.root.settings_win.max_thickness_value.grid(row=5, column=1, columnspan=2, sticky='w,e,n,s')
+            self.root.settings_win.max_thickness_minus = buttons.createBtn(self.root.settings_win, '-', self.settings_window_close)
+            self.root.settings_win.max_thickness_minus.grid(row=5, column=0)
+            self.root.settings_win.max_thickness_plus = buttons.createBtn(self.root.settings_win, '+', self.settings_window_close)
+            self.root.settings_win.max_thickness_plus.grid(row=5, column=3)
+
+            # Setup min thickness value + buttons
+            self.root.settings_win.min_thickness_label = buttons.createLabel(self.root.settings_win, 'Min Thickness (mm)')
+            self.root.settings_win.min_thickness_label.grid(row=6, column=0, columnspan=4, sticky='w,e,n,s')
+            self.root.settings_win.min_thickness_value = buttons.createLabel(self.root.settings_win, config.FAIL_HEIGHT_LOW)
+            self.root.settings_win.min_thickness_value.grid(row=7, column=1, columnspan=2, sticky='w,e,n,s')
+            self.root.settings_win.min_thickness_minus = buttons.createBtn(self.root.settings_win, '-', self.settings_window_close)
+            self.root.settings_win.min_thickness_minus.grid(row=7, column=0)
+            self.root.settings_win.min_thickness_plus = buttons.createBtn(self.root.settings_win, '+', self.settings_window_close)
+            self.root.settings_win.min_thickness_plus.grid(row=7, column=3)
+
+            self.root.settings_win.return_running = buttons.returnRunningBtn(self, self.root.settings_win)
+            self.root.settings_win.return_running.grid(row=100, column=0, columnspan=4, pady=(20, 0), sticky='s')
 
             if admin == True:
+                # Setup threshold value + buttons
+                self.root.settings_win.threshold_label = buttons.createLabel(self.root.settings_win, 'Threshold')
+                self.root.settings_win.threshold_label.grid(row=8, column=0, columnspan=4, sticky='w,e,n,s')
+                self.root.settings_win.threshold_value = buttons.createLabel(self.root.settings_win, config.WHITE_THRESH)
+                self.root.settings_win.threshold_value.grid(row=9, column=1, columnspan=2, sticky='w,e,n,s')
+                self.root.settings_win.threshold_minus = buttons.createBtn(self.root.settings_win, '-', self.settings_window_close)
+                self.root.settings_win.threshold_minus.grid(row=9, column=0)
+                self.root.settings_win.threshold_plus = buttons.createBtn(self.root.settings_win, '+', self.settings_window_close)
+                self.root.settings_win.threshold_plus.grid(row=9, column=3)
+
                 self.root.settings_win.calibrateModeBtn = buttons.calibrateModeBtn(self, self.root.settings_win)
-                self.root.settings_win.calibrateModeBtn.pack()
+                self.root.settings_win.calibrateModeBtn.grid(row=10, column=0, columnspan=2, pady=(20, 0), sticky='s')
 
                 self.root.settings_win.threshModeBtn = buttons.threshModeBtn(self, self.root.settings_win)
-                self.root.settings_win.threshModeBtn.pack()
+                self.root.settings_win.threshModeBtn.grid(row=10, column=2, columnspan=2, pady=(20, 0), sticky='s')
 
     def settings_window_close(self):
         # Stop calibrate mode and start running again
@@ -88,7 +163,7 @@ class RunningWindow(threading.Thread):
 
         elif (self.root.settings_win.threshModeBtn.cget('text') == 'STOP THRESH MODE') :
                 program_state.set_thresh(False)
-                for i in range(config.LANE_COUNT):        
+                for i in range(config.LANE_COUNT):
                     cv2.destroyWindow('THRESH' + str(i))
                 self.root.settings_win.threshModeBtn.configure(bg='blue', activebackground='blue', text='THRESH MODE')
 
@@ -115,13 +190,13 @@ class RunningWindow(threading.Thread):
 
         self.root.resultsBtn = buttons.resultsBtn(self)
         self.root.resultsBtn.pack(side=Tkinter.LEFT)
-        
+
         self.root.protocol('WM_DELETE_WINDOW', self.disable_close)
         self.root.bind('<Key>', self.key)
         self.root.bind('<Return>', self.enter)
 
         self.root.deiconify()
-        
+
         threading.Thread.__init__(self)
 
     def take_focus(self):
