@@ -57,6 +57,13 @@ def createLabel(settings_win, text):
         font='Helvetica 12',
     )
 
+def createLabelText(settings_win, text):
+    return Tkinter.Label(
+        settings_win,
+        textvariable=text,
+        font='Helvetica 12',
+    )
+
 def createBtn(settings_win, text, action):
     return Tkinter.Button(
         settings_win,
