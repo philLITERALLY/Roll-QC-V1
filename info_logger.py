@@ -47,7 +47,7 @@ def settings_access_error(keycard_value):
 def result(lane, width, height, frames):
     ''' This adds a row result to CSV file '''
     row = [str(datetime.datetime.now().strftime('%d/%m/%y %H:%M:%S'))]
-    row.append(str(lane))
+    row.append(str(lane + 1))
     row.append(str(int(width / config.WIDTH_RATIOS[lane])))
     row.append(str(int(height / config.HEIGHT_RATIOS[lane])))
     row.append(str(frames))

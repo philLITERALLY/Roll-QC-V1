@@ -71,13 +71,13 @@ class lanePulseThread (threading.Thread):
                 if LANE_FLAG[lane] == 'Pass':
                     AIO_PASS_FAIL_PULSE[lane] = [1, 0]
                     time.sleep(config.AIO_WAIT)      # sleep for 200 ms
-                    AIO_ACTIONS[lane] = 0
                 elif LANE_FLAG[lane] == 'Fail':
                     AIO_PASS_FAIL_PULSE[lane] = [0, 1]
-                    time.sleep(config.AIO_WAIT)      # sleep for 200 ms
                     AIO_ACTIONS[lane] = 1
+                    time.sleep(config.AIO_WAIT)      # sleep for 200 ms
 
                 AIO_PASS_FAIL_PULSE[lane] = [0, 0]
+                AIO_ACTIONS[lane] = 0
                 LANE_FLAG[lane] = ''
 
 class aioThread (threading.Thread):
@@ -186,7 +186,7 @@ class statsThread (threading.Thread):
                         PASS_COUNTS[lane] += 1
                         LANE_FLAG[lane] = 'Pass'
 
-                    info_logger.result(lane + 1, int(average_width), int(average_height), frames_scanned)
+                    info_logger.result(lane, int(average_width), int(average_height), frames_scanned)
 
                     # Reset arrays
                     AVG_WIDTHS_CURRENT[lane] = [0, 0]
