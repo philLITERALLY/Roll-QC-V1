@@ -13,6 +13,8 @@ import running_window
 import program_state
 import variables
 import info_logger
+import handle_config # module to handle config settings
+handle_config.init() # config settings need loaded
 
 # AIO DLL
 import clr
@@ -176,10 +178,10 @@ class statsThread (threading.Thread):
                     AVG_WIDTHS_TOTAL[lane] = self.calculate_avg(AVG_WIDTHS_TOTAL[lane], average_width)
                     AVG_HEIGHTS_TOTAL[lane] = self.calculate_avg(AVG_HEIGHTS_TOTAL[lane], average_height)
 
-                    if average_width < config.LANE_FAIL_WIDTHS_LOW[lane] or \
-                        average_width > config.LANE_FAIL_WIDTHS_HIGH[lane] or \
-                        average_height < config.LANE_FAIL_HEIGHTS_LOW[lane] or \
-                        average_height > config.LANE_FAIL_HEIGHTS_HIGH[lane]:
+                    if average_width < handle_config.LANE_FAIL_WIDTHS_LOW[lane] or \
+                        average_width > handle_config.LANE_FAIL_WIDTHS_HIGH[lane] or \
+                        average_height < handle_config.LANE_FAIL_HEIGHTS_LOW[lane] or \
+                        average_height > handle_config.LANE_FAIL_HEIGHTS_HIGH[lane]:
                         FAIL_COUNTS[lane] += 1
                         LANE_FLAG[lane] = 'Fail'
                     else:
@@ -230,7 +232,7 @@ class imgProc (threading.Thread):
                         w = current_rect[1][1]
                         h = current_rect[1][0]
 
-                    calc_dimensions = config.dimension_calc(lane, w, h)
+                    calc_dimensions = variables.dimension_calc(lane, w, h)
 
                     if variables.is_pass(lane, w, h):
                         color = config.GREEN
@@ -281,8 +283,8 @@ class imgProc (threading.Thread):
             not_thresh_statement = (lane for lane in range(config.LANE_COUNT) if not program_state.THRESH_MODE and not program_state.CALIBRATE_MODE)
             for lane in not_thresh_statement:
                 AVG_TEXT = 'AVG: 0%'
-                AVG_WIDTHS_TEXT = 'AVG WIDTH: ' + str(int(AVG_WIDTHS_TOTAL[lane][0] * config.WIDTH_RATIOS[lane])) + 'mm'
-                AVG_HEIGHTS_TEXT = 'AVG HEIGHT: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * config.HEIGHT_RATIOS[lane])) + 'mm'
+                AVG_WIDTHS_TEXT = 'AVG WIDTH: ' + str(int(AVG_WIDTHS_TOTAL[lane][0] * handle_config.WIDTH_RATIOS[lane])) + 'mm'
+                AVG_HEIGHTS_TEXT = 'AVG HEIGHT: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * handle_config.HEIGHT_RATIOS[lane])) + 'mm'
                 if PASS_COUNTS[lane] > 0:
                     AVG_TEXT = 'AVG: ' + str(100 * PASS_COUNTS[lane] / (PASS_COUNTS[lane] + FAIL_COUNTS[lane])) + '%'
                 cv2.putText(CROPPED, "PASS: " + str(PASS_COUNTS[lane]), (config.PASS_FAIL_X[lane], config.TEXT_Y), config.FONT, 1, config.RED, 2)

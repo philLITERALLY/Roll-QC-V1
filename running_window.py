@@ -12,6 +12,7 @@ import get_logins
 import info_logger
 import buttons
 import config
+import handle_config
 
 LOGINS = get_logins.main()
 KEYCARD_VALUE = ''

@@ -7,7 +7,7 @@ import csv
 
 # My Modules
 import variables
-import config
+import handle_config
 
 logging.basicConfig(filename='logging_' + datetime.datetime.now().strftime('%d-%m-%Y') + '.log', level=logging.DEBUG)
 
@@ -48,8 +48,8 @@ def result(lane, width, height, frames):
     ''' This adds a row result to CSV file '''
     row = [str(datetime.datetime.now().strftime('%d/%m/%y %H:%M:%S'))]
     row.append(str(lane + 1))
-    row.append(str(int(width / config.WIDTH_RATIOS[lane])))
-    row.append(str(int(height / config.HEIGHT_RATIOS[lane])))
+    row.append(str(int(width / handle_config.WIDTH_RATIOS[lane])))
+    row.append(str(int(height / handle_config.HEIGHT_RATIOS[lane])))
     row.append(str(frames))
 
     with open('results.csv', 'ab') as csvFile:

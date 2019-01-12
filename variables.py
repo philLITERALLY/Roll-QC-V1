@@ -1,7 +1,7 @@
 '''This module contains any variables required for the program to run'''
 
 # My modules
-import config
+import handle_config
 
 CAMERA_VARIABLES = [
     'CAP_PROP_POS_MSEC',
@@ -58,10 +58,16 @@ def CALCULATE_FROM_IO_VALUE(VALUE):
     print(VALUE)
 
 def is_pass(lane, width, height):
-    if width < config.LANE_FAIL_WIDTHS_LOW[lane] or \
-       width > config.LANE_FAIL_WIDTHS_HIGH[lane] or \
-       height < config.LANE_FAIL_HEIGHTS_LOW[lane] or \
-       height > config.LANE_FAIL_HEIGHTS_HIGH[lane]:
+    if width < handle_config.LANE_FAIL_WIDTHS_LOW[lane] or \
+       width > handle_config.LANE_FAIL_WIDTHS_HIGH[lane] or \
+       height < handle_config.LANE_FAIL_HEIGHTS_LOW[lane] or \
+       height > handle_config.LANE_FAIL_HEIGHTS_HIGH[lane]:
         return False
     else:
         return True
+
+def dimension_calc(lane, width, height):
+    '''This function takes the pixel width and using the defined ratios converts to mm'''
+    converted_width = int(width * handle_config.WIDTH_RATIOS[lane])
+    converted_height = int(height * handle_config.HEIGHT_RATIOS[lane])
+    return '{0}mm x {1}mm'.format(converted_width, converted_height)

@@ -4,17 +4,16 @@
 import cv2      # OpenCV
 
 # My Modules
-import config
+import handle_config
 import info_logger
 
 def main():
     '''Initialise and apply camera settings'''
-    reload(config) # Reload any config changes
-
     capture = cv2.VideoCapture(0)
-    capture.set(3, config.CAM_WIDTH)
-    capture.set(4, config.CAM_HEIGHT)
-    capture.set(5, config.CAM_FPS)
+    print handle_config.CAM_WIDTH
+    capture.set(3, handle_config.CAM_WIDTH)
+    capture.set(4, handle_config.CAM_HEIGHT)
+    capture.set(5, handle_config.CAM_FPS)
 
     info_logger.camera_settings(capture)
 

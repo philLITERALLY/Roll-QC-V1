@@ -82,9 +82,3 @@ AIO_WAIT = 0.2
 #   thresh - shows thresh images
 #   record  - records video
 DEV_MODE = []
-
-def dimension_calc(lane, width, height):
-    '''This function takes the pixel width and using the defined ratios converts to mm'''
-    converted_width = int(width * WIDTH_RATIOS[lane])
-    converted_height = int(height * HEIGHT_RATIOS[lane])
-    return '{0}mm x {1}mm'.format(converted_width, converted_height)
