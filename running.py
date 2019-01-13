@@ -44,7 +44,7 @@ PASS_COUNTS = []         # array to hold total pass count
 FAIL_COUNTS = []         # array to hold total fail count
 
 # Setup variables for number of lanes
-for lane in range(config.LANE_COUNT):
+for lane in range(handle_config.LANE_COUNT):
     AIO_PASS_FAIL_PULSE.append([0, 0])
     AIO_ACTIONS.append(0)
     LANE_FLAG.append('')
@@ -72,11 +72,11 @@ class lanePulseThread (threading.Thread):
             if LANE_FLAG[lane]: # if flag detected
                 if LANE_FLAG[lane] == 'Pass':
                     AIO_PASS_FAIL_PULSE[lane] = [1, 0]
-                    time.sleep(config.AIO_WAIT)      # sleep for 200 ms
+                    time.sleep(handle_config.AIO_WAIT)      # sleep for 200 ms
                 elif LANE_FLAG[lane] == 'Fail':
                     AIO_PASS_FAIL_PULSE[lane] = [0, 1]
                     AIO_ACTIONS[lane] = 1
-                    time.sleep(config.AIO_WAIT)      # sleep for 200 ms
+                    time.sleep(handle_config.AIO_WAIT)      # sleep for 200 ms
 
                 AIO_PASS_FAIL_PULSE[lane] = [0, 0]
                 AIO_ACTIONS[lane] = 0
@@ -134,12 +134,14 @@ class statsThread (threading.Thread):
         global AVG_WIDTHS_CURRENT, AVG_HEIGHTS_CURRENT # current average width/height
         while not program_state.STOP_PROGRAM:
 
-            TEST += 1
-            print TEST
+            # EXAMPLE SETTING
+            # handle_config.TEST += 1
+            # handle_config.setValue('TESTING', 'TEST', handle_config.TEST)
+            # EXAMPLE SETTING
 
             if not program_state.RUN_MODE:
                 # Reset stats
-                for lane in range(config.LANE_COUNT):
+                for lane in range(handle_config.LANE_COUNT):
                     AIO_PASS_FAIL_PULSE[lane] = [0, 0]
                     AIO_ACTIONS[lane] = 0
                     LANE_FLAG[lane] = ''
@@ -153,7 +155,7 @@ class statsThread (threading.Thread):
                 # Skip everything else
                 pass
 
-            for lane in range(config.LANE_COUNT):
+            for lane in range(handle_config.LANE_COUNT):
                 # If blob deteced within our scan section
                 if len(RECTS_ARR[lane]) > 0:
                     current_rect = RECTS_ARR[lane][:]
@@ -215,17 +217,17 @@ class imgProc (threading.Thread):
 
             _, FRAME = CAPTURE.read() # Take each FRAME
 
-            CROPPED = FRAME[config.FRAME_HEIGHT_START:config.FRAME_HEIGHT_END, config.FRAME_WIDTH_START:config.FRAME_WIDTH_END]
+            CROPPED = FRAME[handle_config.FRAME_HEIGHT_START:handle_config.FRAME_HEIGHT_END, handle_config.FRAME_WIDTH_START:handle_config.FRAME_WIDTH_END]
             GRAY = cv2.cvtColor(CROPPED, cv2.COLOR_BGR2GRAY)                    # Turn image to Grayscale
-            _, THRESHOLD_IMG = cv2.threshold(GRAY, config.WHITE_THRESH, 255, 0) # Run threshold on gray image
+            _, THRESHOLD_IMG = cv2.threshold(GRAY, handle_config.WHITE_THRESH, 255, 0) # Run threshold on gray image
             DISPLAY_IMG = CROPPED
 
             if program_state.THRESH_MODE:
                 DISPLAY_IMG = THRESHOLD_IMG
 
-            for lane in range(config.LANE_COUNT):
+            for lane in range(handle_config.LANE_COUNT):
                 if RECTS_ARR[lane]:
-                    color = config.RED
+                    color = handle_config.RED
                     current_rect = RECTS_ARR[lane]
                     current_box = BOX_ARR[lane]
 
@@ -239,30 +241,20 @@ class imgProc (threading.Thread):
                     calc_dimensions = variables.dimension_calc(lane, w, h)
 
                     if variables.is_pass(lane, w, h):
-                        color = config.GREEN
+                        color = handle_config.GREEN
 
                     start_pos = min([position[0] for position in current_box])
                     high_pos = min([position[1] for position in current_box])
                     low_pos = max([position[1] for position in current_box])
                     cv2.drawContours(CROPPED, [current_box], 0, color, 2)
-                    cv2.putText(CROPPED, calc_dimensions, (start_pos, high_pos), config.FONT, 1, color, 2)
+                    cv2.putText(CROPPED, calc_dimensions, (start_pos, high_pos), handle_config.FONT, 1, color, 2)
 
                     if program_state.CALIBRATE_MODE:
                         pixel_dimensions = '{0}px x {1}px'.format(int(w), int(h))
-                        cv2.putText(CROPPED, pixel_dimensions, (start_pos, low_pos), config.FONT, 1, config.RED, 2)
+                        cv2.putText(CROPPED, pixel_dimensions, (start_pos, low_pos), handle_config.FONT, 1, handle_config.RED, 2)
 
             if program_state.REQUEST_CALIBRATE:
-                lines = open('config.py', 'r').readlines() # open config file
-
-                calib_widths = lines[6][15:-6] # get calibration widths
-                calib_widths = calib_widths.replace(']','').replace('[','')
-                calib_widths = calib_widths.split(", ") # turn into array
-
-                calib_heights = lines[7][16:-6] # get calibration heights
-                calib_heights = calib_heights.replace(']','').replace('[','')
-                calib_heights = calib_heights.split(", ") # turn into array
-
-                for lane in range(config.LANE_COUNT): # loop through lanes
+                for lane in range(handle_config.LANE_COUNT): # loop through lanes
                     if RECTS_ARR[lane]: # if lane has contour
                         current_rect = RECTS_ARR[lane]
                         if current_rect[1][0] > current_rect[1][1]:
@@ -272,49 +264,52 @@ class imgProc (threading.Thread):
                             w = current_rect[1][1]
                             h = current_rect[1][0]
 
-                        calib_widths[lane] = w
-                        calib_heights[lane] = h
+                        handle_config.PIXEL_WIDTHS[lane] = w
+                        handle_config.PIXEL_HEIGHTS[lane] = h
 
-                lines[6] = 'PIXEL_WIDTHS = ' + str(calib_widths) + ' # px\n'
-                lines[7] = 'PIXEL_HEIGHTS = ' + str(calib_heights) + ' # px\n'
-                out = open('config.py', 'w')
-                out.writelines(lines)
-                out.close()
+                # Adjust ratios to match calibration
+                for index, width in enumerate(handle_config.PIXEL_WIDTHS):
+                    handle_config.WIDTH_RATIOS[index] = handle_config.ACTUAL_WIDTH / width
+                for index, height in enumerate(handle_config.PIXEL_HEIGHTS):
+                    handle_config.HEIGHT_RATIOS[index] = handle_config.ACTUAL_WIDTH / height
+
+                handle_config.setValue('CALIBRATION', 'PIXEL_WIDTHS', handle_config.PIXEL_WIDTHS)
+                handle_config.setValue('CALIBRATION', 'PIXEL_HEIGHTS', handle_config.PIXEL_HEIGHTS)
 
                 program_state.request_calibration(False)
 
             # Not Thresh Mode
-            not_thresh_statement = (lane for lane in range(config.LANE_COUNT) if not program_state.THRESH_MODE and not program_state.CALIBRATE_MODE)
+            not_thresh_statement = (lane for lane in range(handle_config.LANE_COUNT) if not program_state.THRESH_MODE and not program_state.CALIBRATE_MODE)
             for lane in not_thresh_statement:
                 AVG_TEXT = 'AVG: 0%'
                 AVG_WIDTHS_TEXT = 'AVG WIDTH: ' + str(int(AVG_WIDTHS_TOTAL[lane][0] * handle_config.WIDTH_RATIOS[lane])) + 'mm'
                 AVG_HEIGHTS_TEXT = 'AVG HEIGHT: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * handle_config.HEIGHT_RATIOS[lane])) + 'mm'
                 if PASS_COUNTS[lane] > 0:
                     AVG_TEXT = 'AVG: ' + str(100 * PASS_COUNTS[lane] / (PASS_COUNTS[lane] + FAIL_COUNTS[lane])) + '%'
-                cv2.putText(CROPPED, "PASS: " + str(PASS_COUNTS[lane]), (config.PASS_FAIL_X[lane], config.TEXT_Y), config.FONT, 1, config.RED, 2)
-                cv2.putText(CROPPED, "FAIL: " + str(FAIL_COUNTS[lane]), (config.PASS_FAIL_X[lane], config.TEXT_Y + 30), config.FONT, 1, config.RED, 2)
-                cv2.putText(CROPPED, AVG_TEXT, (config.PASS_FAIL_X[lane], config.TEXT_Y + 60), config.FONT, 1, config.RED, 2)
+                cv2.putText(CROPPED, "PASS: " + str(PASS_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.putText(CROPPED, "FAIL: " + str(FAIL_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 30), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.putText(CROPPED, AVG_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 60), handle_config.FONT, 1, handle_config.RED, 2)
                 if AVG_WIDTHS_TOTAL[lane][0] > 0:
-                    cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (config.PASS_FAIL_X[lane], config.TEXT_Y + 90), config.FONT, 1, config.RED, 2)
+                    cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 90), handle_config.FONT, 1, handle_config.RED, 2)
                 if AVG_HEIGHTS_TOTAL[lane][0] > 0:
-                    cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (config.PASS_FAIL_X[lane], config.TEXT_Y + 120), config.FONT, 1, config.RED, 2)
+                    cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 120), handle_config.FONT, 1, handle_config.RED, 2)
 
             # Show Lane Boundaries
-            cv2.rectangle(CROPPED, (config.LANE_X1, config.LANE_Y1), (config.LANE_X2, config.LANE_Y2), config.YELLOW, 2)
-            cv2.rectangle(CROPPED, (config.SPLIT_X1, config.LANE_Y1), (config.SPLIT_X2, config.LANE_Y2), config.YELLOW, 2)
+            cv2.rectangle(CROPPED, (handle_config.LANE_X1, handle_config.LANE_Y1), (handle_config.LANE_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
+            cv2.rectangle(CROPPED, (handle_config.SPLIT_X1, handle_config.LANE_Y1), (handle_config.SPLIT_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
 
             # Show current AIO
-            cv2.putText(CROPPED, "OUTPUT: " + str(OUTPUT), (350, 50), config.FONT, 1, config.RED, 2)
+            cv2.putText(CROPPED, "OUTPUT: " + str(OUTPUT), (350, 50), handle_config.FONT, 1, handle_config.RED, 2)
 
             # Show min/max values
-            max_length = "Max Length = " + str(int(config.FAIL_WIDTH_HIGH)) + "mm   "
-            min_length = "Min Length = " + str(int(config.FAIL_WIDTH_LOW)) + "mm    "
-            max_thickness = "Max Thickness = " + str(int(config.FAIL_HEIGHT_HIGH)) + "mm"
-            min_thickness = "Min Thickness = " + str(int(config.FAIL_HEIGHT_LOW)) + "mm"
-            cv2.putText(CROPPED, "Current REJECT settings:-", (230, 950), config.FONT, 1, config.RED, 2)
-            cv2.line(CROPPED, (50, 965), (840, 965), config.RED, 2)
-            cv2.putText(CROPPED, max_length + max_thickness, (50, 1000), config.FONT, 1, config.RED, 2)
-            cv2.putText(CROPPED, min_length + min_thickness, (50, 1050), config.FONT, 1, config.RED, 2)
+            max_length = "Max Length = " + str(int(handle_config.FAIL_WIDTH_HIGH)) + "mm   "
+            min_length = "Min Length = " + str(int(handle_config.FAIL_WIDTH_LOW)) + "mm    "
+            max_thickness = "Max Thickness = " + str(int(handle_config.FAIL_HEIGHT_HIGH)) + "mm"
+            min_thickness = "Min Thickness = " + str(int(handle_config.FAIL_HEIGHT_LOW)) + "mm"
+            cv2.putText(CROPPED, "Current REJECT settings:-", (230, 950), handle_config.FONT, 1, handle_config.RED, 2)
+            cv2.line(CROPPED, (50, 965), (840, 965), handle_config.RED, 2)
+            cv2.putText(CROPPED, max_length + max_thickness, (50, 1000), handle_config.FONT, 1, handle_config.RED, 2)
+            cv2.putText(CROPPED, min_length + min_thickness, (50, 1050), handle_config.FONT, 1, handle_config.RED, 2)
 
             window_name = 'LINE VIEW'
             if DISPLAY_IMG != []:
@@ -342,7 +337,7 @@ class laneThread (threading.Thread):
 
             LANE_RECTS = []
             LANE_BOXES = []
-            THRESH_LANE_IMG = THRESHOLD_IMG[config.LANE_HEIGHT_START:config.LANE_HEIGHT_END, config.LANE_WIDTH_START[lane]:config.LANE_WIDTH_END[lane]]
+            THRESH_LANE_IMG = THRESHOLD_IMG[handle_config.LANE_HEIGHT_START:handle_config.LANE_HEIGHT_END, handle_config.LANE_WIDTH_START[lane]:handle_config.LANE_WIDTH_END[lane]]
 
             # run opencv find contours, only external boxes
             _, CONTOURS, _ = cv2.findContours(THRESH_LANE_IMG, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -358,18 +353,18 @@ class laneThread (threading.Thread):
 
                 start_pos = min([position[1] for position in box])
                 high_pos = max([position[1] for position in box])
-                exiting_box = config.LANE_HEIGHT - config.EDGE_GAP
+                exiting_box = handle_config.LANE_HEIGHT - handle_config.EDGE_GAP
 
                 # if area big enough
                 # if contour within top bound
                 # if contour hasn't left bottom bound
-                if cv2.contourArea(contour) > config.MIN_AREA and \
-                    start_pos > config.EDGE_GAP and \
+                if cv2.contourArea(contour) > handle_config.MIN_AREA and \
+                    start_pos > handle_config.EDGE_GAP and \
                     high_pos < exiting_box:
 
                     for position in box:
-                        position[0] += config.LANE_WIDTH_START[lane]
-                        position[1] += config.LANE_HEIGHT_START
+                        position[0] += handle_config.LANE_WIDTH_START[lane]
+                        position[1] += handle_config.LANE_HEIGHT_START
 
                     LANE_RECTS = rect
                     LANE_BOXES = box
@@ -381,7 +376,7 @@ THREADS.append(aioThread())
 THREADS.append(statsThread())
 THREADS.append(imgProc())
 
-for lane in range(config.LANE_COUNT):
+for lane in range(handle_config.LANE_COUNT):
     THREADS.append(lanePulseThread(lane))
     THREADS.append(laneThread(lane))
 

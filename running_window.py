@@ -11,7 +11,6 @@ import program_state
 import get_logins
 import info_logger
 import buttons
-import config
 import handle_config
 
 LOGINS = get_logins.main()
@@ -46,29 +45,27 @@ class RunningWindow(threading.Thread):
 
         KEYCARD_VALUE = ''
 
-    def change_config_value(self, type, value, text):
-        reload(config)
-
-        text.set(value)
-
-        lines = open('config.py', 'r').readlines() # open config file
-
-        if type == 'Thresh':
-            lines[64] = 'WHITE_THRESH = ' + str(value) + '\n'
-        elif type == 'WidthLow':
-            lines[66] = 'FAIL_WIDTH_LOW = ' + str(value) + ' # mm\n'
-        elif type == 'WidthHigh':
-            lines[67] = 'FAIL_WIDTH_HIGH = ' + str(value) + ' # mm\n'
-        elif type == 'HeightLow':
-            lines[68] = 'FAIL_HEIGHT_LOW = ' + str(value) + ' # mm\n'
-        elif type == 'HeightHigh':
-            lines[69] = 'FAIL_HEIGHT_HIGH = ' + str(value) + ' # mm\n'
-
-        out = open('config.py', 'w')
-        out.writelines(lines)
-        out.close()
-
-        reload(config)
+    def change_config_value(self, variable, value, text):
+        if variable == 'WHITE_THRESH':
+            handle_config.WHITE_THRESH += value
+            handle_config.setValue('THRESHOLD', 'WHITE_THRESH', handle_config.WHITE_THRESH)
+            self.root.settings_win.threshold_text.set(handle_config.WHITE_THRESH)
+        elif variable == 'FAIL_WIDTH_LOW':
+            handle_config.FAIL_WIDTH_LOW += value
+            handle_config.setValue('THRESHOLD', 'FAIL_WIDTH_LOW', handle_config.FAIL_WIDTH_LOW)
+            self.root.settings_win.min_length_text.set(handle_config.FAIL_WIDTH_LOW)
+        elif variable == 'FAIL_WIDTH_HIGH':
+            handle_config.FAIL_WIDTH_HIGH += value
+            handle_config.setValue('THRESHOLD', 'FAIL_WIDTH_HIGH', handle_config.FAIL_WIDTH_HIGH)
+            self.root.settings_win.max_length_text.set(handle_config.FAIL_WIDTH_HIGH)
+        elif variable == 'FAIL_HEIGHT_LOW':
+            handle_config.FAIL_HEIGHT_LOW += value
+            handle_config.setValue('THRESHOLD', 'FAIL_HEIGHT_LOW', handle_config.FAIL_HEIGHT_LOW)
+            self.root.settings_win.min_thickness_text.set(handle_config.FAIL_HEIGHT_LOW)
+        elif variable == 'FAIL_HEIGHT_HIGH':
+            handle_config.FAIL_HEIGHT_HIGH += value
+            handle_config.setValue('THRESHOLD', 'FAIL_HEIGHT_HIGH', handle_config.FAIL_HEIGHT_HIGH)
+            self.root.settings_win.max_thickness_text.set(handle_config.FAIL_HEIGHT_HIGH)
 
     def settings_window(self, admin):
         # If settings window not already open
@@ -87,56 +84,56 @@ class RunningWindow(threading.Thread):
             self.root.settings_win.max_length_label = buttons.createLabel(self.root.settings_win, 'Max Length')
             self.root.settings_win.max_length_label.grid(row=0, column=0, columnspan=4, sticky='w,e,n,s')
             self.root.settings_win.max_length_text = Tkinter.StringVar()
-            self.root.settings_win.max_length_text.set(config.FAIL_WIDTH_HIGH)
+            self.root.settings_win.max_length_text.set(handle_config.FAIL_WIDTH_HIGH)
             self.root.settings_win.max_length_value = buttons.createLabelText(self.root.settings_win, self.root.settings_win.max_length_text)
             self.root.settings_win.max_length_value.grid(row=1, column=1, columnspan=2, sticky='w,e,n,s')
             self.root.settings_win.max_length_minus = \
-                buttons.createBtn(self.root.settings_win, '-', lambda: self.change_config_value('WidthHigh', config.FAIL_WIDTH_HIGH - 1, self.root.settings_win.max_length_text))
+                buttons.createBtn(self.root.settings_win, '-', lambda: self.change_config_value('FAIL_WIDTH_HIGH', -1, self))
             self.root.settings_win.max_length_minus.grid(row=1, column=0)
             self.root.settings_win.max_length_plus = \
-                buttons.createBtn(self.root.settings_win, '+', lambda: self.change_config_value('WidthHigh', config.FAIL_WIDTH_HIGH + 1, self.root.settings_win.max_length_text))
+                buttons.createBtn(self.root.settings_win, '+', lambda: self.change_config_value('FAIL_WIDTH_HIGH', 1, self))
             self.root.settings_win.max_length_plus.grid(row=1, column=3)
 
             # Setup min length value + buttons
             self.root.settings_win.min_length_label = buttons.createLabel(self.root.settings_win, 'Min Length (mm)')
             self.root.settings_win.min_length_label.grid(row=2, column=0, columnspan=4, sticky='w,e,n,s')
             self.root.settings_win.min_length_text = Tkinter.StringVar()
-            self.root.settings_win.min_length_text.set(config.FAIL_WIDTH_LOW)
+            self.root.settings_win.min_length_text.set(handle_config.FAIL_WIDTH_LOW)
             self.root.settings_win.min_length_value = buttons.createLabelText(self.root.settings_win, self.root.settings_win.min_length_text)
             self.root.settings_win.min_length_value.grid(row=3, column=1, columnspan=2, sticky='w,e,n,s')
             self.root.settings_win.min_length_minus = \
-                buttons.createBtn(self.root.settings_win, '-', lambda: self.change_config_value('WidthLow', config.FAIL_WIDTH_LOW - 1, self.root.settings_win.min_length_text))
+                buttons.createBtn(self.root.settings_win, '-', lambda: self.change_config_value('FAIL_WIDTH_LOW', -1, self))
             self.root.settings_win.min_length_minus.grid(row=3, column=0)
             self.root.settings_win.min_length_plus = \
-                buttons.createBtn(self.root.settings_win, '+', lambda: self.change_config_value('WidthLow', config.FAIL_WIDTH_LOW + 1, self.root.settings_win.min_length_text))
+                buttons.createBtn(self.root.settings_win, '+', lambda: self.change_config_value('FAIL_WIDTH_LOW', 1, self))
             self.root.settings_win.min_length_plus.grid(row=3, column=3)
 
             # Setup max thickness value + buttons
             self.root.settings_win.max_thickness_label = buttons.createLabel(self.root.settings_win, 'Max Thickness (mm)')
             self.root.settings_win.max_thickness_label.grid(row=4, column=0, columnspan=4, sticky='w,e,n,s')
             self.root.settings_win.max_thickness_text = Tkinter.StringVar()
-            self.root.settings_win.max_thickness_text.set(config.FAIL_HEIGHT_HIGH)
+            self.root.settings_win.max_thickness_text.set(handle_config.FAIL_HEIGHT_HIGH)
             self.root.settings_win.max_thickness_value = buttons.createLabelText(self.root.settings_win, self.root.settings_win.max_thickness_text)
             self.root.settings_win.max_thickness_value.grid(row=5, column=1, columnspan=2, sticky='w,e,n,s')
             self.root.settings_win.max_thickness_minus = \
-                buttons.createBtn(self.root.settings_win, '-', lambda: self.change_config_value('HeightHigh', config.FAIL_HEIGHT_HIGH - 1, self.root.settings_win.max_thickness_text))
+                buttons.createBtn(self.root.settings_win, '-', lambda: self.change_config_value('FAIL_HEIGHT_HIGH', -1, self))
             self.root.settings_win.max_thickness_minus.grid(row=5, column=0)
             self.root.settings_win.max_thickness_plus = \
-                buttons.createBtn(self.root.settings_win, '+', lambda: self.change_config_value('HeightHigh', config.FAIL_HEIGHT_HIGH + 1, self.root.settings_win.max_thickness_text))
+                buttons.createBtn(self.root.settings_win, '+', lambda: self.change_config_value('FAIL_HEIGHT_HIGH', 1, self))
             self.root.settings_win.max_thickness_plus.grid(row=5, column=3)
 
             # Setup min thickness value + buttons
             self.root.settings_win.min_thickness_label = buttons.createLabel(self.root.settings_win, 'Min Thickness (mm)')
             self.root.settings_win.min_thickness_label.grid(row=6, column=0, columnspan=4, sticky='w,e,n,s')
             self.root.settings_win.min_thickness_text = Tkinter.StringVar()
-            self.root.settings_win.min_thickness_text.set(config.FAIL_HEIGHT_LOW)
+            self.root.settings_win.min_thickness_text.set(handle_config.FAIL_HEIGHT_LOW)
             self.root.settings_win.min_thickness_value = buttons.createLabelText(self.root.settings_win, self.root.settings_win.min_thickness_text)
             self.root.settings_win.min_thickness_value.grid(row=7, column=1, columnspan=2, sticky='w,e,n,s')
             self.root.settings_win.min_thickness_minus = \
-                buttons.createBtn(self.root.settings_win, '-', lambda: self.change_config_value('HeightLow', config.FAIL_HEIGHT_LOW - 1, self.root.settings_win.min_thickness_text))
+                buttons.createBtn(self.root.settings_win, '-', lambda: self.change_config_value('FAIL_HEIGHT_LOW', -1, self))
             self.root.settings_win.min_thickness_minus.grid(row=7, column=0)
             self.root.settings_win.min_thickness_plus = \
-                buttons.createBtn(self.root.settings_win, '+', lambda: self.change_config_value('HeightLow', config.FAIL_HEIGHT_LOW + 1, self.root.settings_win.min_thickness_text))
+                buttons.createBtn(self.root.settings_win, '+', lambda: self.change_config_value('FAIL_HEIGHT_LOW', 1, self))
             self.root.settings_win.min_thickness_plus.grid(row=7, column=3)
 
             self.root.settings_win.return_running = buttons.returnRunningBtn(self, self.root.settings_win)
@@ -147,14 +144,14 @@ class RunningWindow(threading.Thread):
                 self.root.settings_win.threshold_label = buttons.createLabel(self.root.settings_win, 'Threshold')
                 self.root.settings_win.threshold_label.grid(row=8, column=0, columnspan=4, sticky='w,e,n,s')
                 self.root.settings_win.threshold_text = Tkinter.StringVar()
-                self.root.settings_win.threshold_text.set(config.WHITE_THRESH)
+                self.root.settings_win.threshold_text.set(handle_config.WHITE_THRESH)
                 self.root.settings_win.threshold_value = buttons.createLabelText(self.root.settings_win, self.root.settings_win.threshold_text)
                 self.root.settings_win.threshold_value.grid(row=9, column=1, columnspan=2, sticky='w,e,n,s')
                 self.root.settings_win.threshold_minus = \
-                buttons.createBtn(self.root.settings_win, '-', lambda: self.change_config_value('Thresh', config.WHITE_THRESH - 5, self.root.settings_win.threshold_text))
+                    buttons.createBtn(self.root.settings_win, '-', lambda: self.change_config_value('WHITE_THRESH', -5, self))
                 self.root.settings_win.threshold_minus.grid(row=9, column=0)
                 self.root.settings_win.threshold_plus = \
-                buttons.createBtn(self.root.settings_win, '+', lambda: self.change_config_value('Thresh', config.WHITE_THRESH + 5, self.root.settings_win.threshold_text))
+                    buttons.createBtn(self.root.settings_win, '+', lambda: self.change_config_value('WHITE_THRESH', 5, self))
                 self.root.settings_win.threshold_plus.grid(row=9, column=3)
 
                 self.root.settings_win.calibrateModeBtn = buttons.calibrateModeBtn(self, self.root.settings_win)
@@ -183,8 +180,6 @@ class RunningWindow(threading.Thread):
 
         elif (self.root.settings_win.threshModeBtn.cget('text') == 'STOP THRESH MODE') :
                 program_state.set_thresh(False)
-                for i in range(config.LANE_COUNT):
-                    cv2.destroyWindow('THRESH' + str(i))
                 self.root.settings_win.threshModeBtn.configure(bg='blue', activebackground='blue', text='THRESH MODE')
 
     def __init__(self):
