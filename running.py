@@ -67,8 +67,8 @@ class lanePulseThread (threading.Thread):
     def run(self):
         global LANE_FLAG
         lane = self.lane
-        while not program_state.STOP_PROGRAM and not program_state.CALIBRATE_MODE:
-            if LANE_FLAG[lane]: # if flag detected
+        while not program_state.STOP_PROGRAM:
+            if program_state.RUN_MODE and LANE_FLAG[lane]: # if flag detected
                 if LANE_FLAG[lane] == 'Pass':
                     AIO_PASS_FAIL_PULSE[lane] = [1, 0]
                     time.sleep(handle_config.AIO_WAIT)      # sleep for 200 ms
@@ -132,12 +132,6 @@ class statsThread (threading.Thread):
         global AVG_WIDTHS_TOTAL, AVG_HEIGHTS_TOTAL     # total average width/height
         global AVG_WIDTHS_CURRENT, AVG_HEIGHTS_CURRENT # current average width/height
         while not program_state.STOP_PROGRAM:
-
-            # EXAMPLE SETTING
-            # handle_config.TEST += 1
-            # handle_config.setValue('TESTING', 'TEST', handle_config.TEST)
-            # EXAMPLE SETTING
-
             if not program_state.RUN_MODE:
                 # Reset stats
                 for lane in range(handle_config.LANE_COUNT):
@@ -283,8 +277,8 @@ class imgProc (threading.Thread):
                 AVG_HEIGHTS_TEXT = 'AVG HEIGHT: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * handle_config.HEIGHT_RATIOS[lane])) + 'mm'
                 if PASS_COUNTS[lane] > 0:
                     AVG_TEXT = 'AVG: ' + str(100 * PASS_COUNTS[lane] / (PASS_COUNTS[lane] + FAIL_COUNTS[lane])) + '%'
-                cv2.putText(CROPPED, "PASS: " + str(PASS_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y), handle_config.FONT, 1, handle_config.RED, 2)
-                cv2.putText(CROPPED, "FAIL: " + str(FAIL_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 30), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.putText(CROPPED, 'PASS: ' + str(PASS_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.putText(CROPPED, 'FAIL: ' + str(FAIL_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 30), handle_config.FONT, 1, handle_config.RED, 2)
                 cv2.putText(CROPPED, AVG_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 60), handle_config.FONT, 1, handle_config.RED, 2)
                 if AVG_WIDTHS_TOTAL[lane][0] > 0:
                     cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 90), handle_config.FONT, 1, handle_config.RED, 2)
@@ -296,14 +290,14 @@ class imgProc (threading.Thread):
             cv2.rectangle(CROPPED, (handle_config.SPLIT_X1, handle_config.LANE_Y1), (handle_config.SPLIT_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
 
             # Show current AIO
-            cv2.putText(CROPPED, "OUTPUT: " + str(OUTPUT), (350, 50), handle_config.FONT, 1, handle_config.RED, 2)
+            cv2.putText(CROPPED, 'OUTPUT: ' + str(OUTPUT), (350, 50), handle_config.FONT, 1, handle_config.RED, 2)
 
             # Show min/max values
-            max_length = "Max Length = " + str(int(handle_config.FAIL_WIDTH_HIGH)) + "mm   "
-            min_length = "Min Length = " + str(int(handle_config.FAIL_WIDTH_LOW)) + "mm    "
-            max_thickness = "Max Thickness = " + str(int(handle_config.FAIL_HEIGHT_HIGH)) + "mm"
-            min_thickness = "Min Thickness = " + str(int(handle_config.FAIL_HEIGHT_LOW)) + "mm"
-            cv2.putText(CROPPED, "Current REJECT settings:-", (230, 950), handle_config.FONT, 1, handle_config.RED, 2)
+            max_length = 'Max Length = ' + str(int(handle_config.FAIL_WIDTH_HIGH)) + 'mm   '
+            min_length = 'Min Length = ' + str(int(handle_config.FAIL_WIDTH_LOW)) + 'mm    '
+            max_thickness = 'Max Thickness = ' + str(int(handle_config.FAIL_HEIGHT_HIGH)) + 'mm'
+            min_thickness = 'Min Thickness = ' + str(int(handle_config.FAIL_HEIGHT_LOW)) + 'mm'
+            cv2.putText(CROPPED, 'Current REJECT settings:-', (230, 950), handle_config.FONT, 1, handle_config.RED, 2)
             cv2.line(CROPPED, (50, 965), (840, 965), handle_config.RED, 2)
             cv2.putText(CROPPED, max_length + max_thickness, (50, 1000), handle_config.FONT, 1, handle_config.RED, 2)
             cv2.putText(CROPPED, min_length + min_thickness, (50, 1050), handle_config.FONT, 1, handle_config.RED, 2)
@@ -382,13 +376,13 @@ for thread in THREADS:
 while program_state.STOP_PROGRAM == False:
     pass
 
-print "Stopping"
+print('Stopping')
 
 # Wait for all threads to complete
 for t in THREADS:
     t.join()
 
-print "Exiting Main Thread"
+print('Exiting Main Thread')
 
 CAPTURE.release() # Release everything if job is finished
 AIO_INSTANCE.RelOutPort(0, 0, 0) # Reset AIO to empty

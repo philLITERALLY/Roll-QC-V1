@@ -1,5 +1,8 @@
 '''This module handles the programs state'''
 
+global RUN_MODE, STOP_PROGRAM, ADMIN_USER
+global CALIBRATE_MODE, THRESH_MODE, REQUEST_CALIBRATE
+
 RUN_MODE = True
 STOP_PROGRAM = False
 ADMIN_USER = False
