@@ -262,7 +262,7 @@ class imgProc (threading.Thread):
                 for index, width in enumerate(handle_config.PIXEL_WIDTHS):
                     handle_config.WIDTH_RATIOS[index] = handle_config.ACTUAL_WIDTH / width
                 for index, height in enumerate(handle_config.PIXEL_HEIGHTS):
-                    handle_config.HEIGHT_RATIOS[index] = handle_config.ACTUAL_WIDTH / height
+                    handle_config.HEIGHT_RATIOS[index] = handle_config.ACTUAL_HEIGHT / height
 
                 handle_config.setValue('CALIBRATION', 'PIXEL_WIDTHS', handle_config.PIXEL_WIDTHS)
                 handle_config.setValue('CALIBRATION', 'PIXEL_HEIGHTS', handle_config.PIXEL_HEIGHTS)

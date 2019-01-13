@@ -23,7 +23,7 @@ def init():
     # Calibration Values
     global WIDTH_RATIOS, HEIGHT_RATIOS
     global PIXEL_WIDTHS, PIXEL_HEIGHTS
-    global ACTUAL_WIDTH
+    global ACTUAL_WIDTH, ACTUAL_HEIGHT
 
     # Thresh
     global MIN_AREA, WHITE_THRESH
