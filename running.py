@@ -133,6 +133,10 @@ class statsThread (threading.Thread):
         global AVG_WIDTHS_TOTAL, AVG_HEIGHTS_TOTAL     # total average width/height
         global AVG_WIDTHS_CURRENT, AVG_HEIGHTS_CURRENT # current average width/height
         while not program_state.STOP_PROGRAM:
+
+            TEST += 1
+            print TEST
+
             if not program_state.RUN_MODE:
                 # Reset stats
                 for lane in range(config.LANE_COUNT):
