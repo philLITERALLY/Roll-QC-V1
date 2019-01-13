@@ -264,6 +264,16 @@ class imgProc (threading.Thread):
                 for index, height in enumerate(handle_config.PIXEL_HEIGHTS):
                     handle_config.HEIGHT_RATIOS[index] = handle_config.ACTUAL_HEIGHT / height
 
+                # Update low highs for calibration
+                for index, ratio in enumerate(handle_config.WIDTH_RATIOS):
+                    handle_config.LANE_FAIL_WIDTHS_LOW[index] = handle_config.FAIL_WIDTH_LOW  / ratio
+                for index, ratio in enumerate(handle_config.WIDTH_RATIOS):
+                    handle_config.LANE_FAIL_WIDTHS_HIGH[index] = handle_config.FAIL_WIDTH_HIGH / ratio
+                for index, ratio in enumerate(handle_config.HEIGHT_RATIOS):
+                    handle_config.LANE_FAIL_HEIGHTS_LOW[index] = handle_config.FAIL_HEIGHT_LOW  / ratio
+                for index, ratio in enumerate(handle_config.HEIGHT_RATIOS):
+                    handle_config.LANE_FAIL_HEIGHTS_HIGH[index] = handle_config.FAIL_HEIGHT_HIGH / ratio
+
                 handle_config.setValue('CALIBRATION', 'PIXEL_WIDTHS', handle_config.PIXEL_WIDTHS)
                 handle_config.setValue('CALIBRATION', 'PIXEL_HEIGHTS', handle_config.PIXEL_HEIGHTS)
 
