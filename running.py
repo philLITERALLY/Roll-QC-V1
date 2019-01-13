@@ -7,7 +7,6 @@ import numpy as np
 import time
 
 # My Modules
-import config
 import camera_setup
 import running_window
 import program_state
@@ -213,8 +212,6 @@ class imgProc (threading.Thread):
         global PASS_COUNTS, FAIL_COUNTS            # total counts
         global AVG_WIDTHS_TOTAL, AVG_HEIGHTS_TOTAL # average width/height
         while not program_state.STOP_PROGRAM:
-            reload(config) # Reload any config changes
-
             _, FRAME = CAPTURE.read() # Take each FRAME
 
             CROPPED = FRAME[handle_config.FRAME_HEIGHT_START:handle_config.FRAME_HEIGHT_END, handle_config.FRAME_WIDTH_START:handle_config.FRAME_WIDTH_END]
@@ -332,8 +329,6 @@ class laneThread (threading.Thread):
             lane = self.lane
             while len(THRESHOLD_IMG) == 0:
                 pass
-
-            reload(config) # Reload any config changes
 
             LANE_RECTS = []
             LANE_BOXES = []
