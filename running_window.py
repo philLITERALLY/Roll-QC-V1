@@ -53,18 +53,42 @@ class RunningWindow(threading.Thread):
         elif variable == 'FAIL_WIDTH_LOW':
             handle_config.FAIL_WIDTH_LOW += value
             handle_config.setValue('THRESHOLD', 'FAIL_WIDTH_LOW', handle_config.FAIL_WIDTH_LOW)
+
+            for index, _ in enumerate(handle_config.LANE_FAIL_WIDTHS_LOW):
+                handle_config.LANE_FAIL_WIDTHS_LOW[index] = \
+                    handle_config.FAIL_WIDTH_LOW / handle_config.WIDTH_RATIOS[index]
+            handle_config.setValue('THRESHOLD', 'LANE_FAIL_WIDTHS_LOW', handle_config.LANE_FAIL_WIDTHS_LOW)
+
             self.root.settings_win.min_length_text.set(handle_config.FAIL_WIDTH_LOW)
         elif variable == 'FAIL_WIDTH_HIGH':
             handle_config.FAIL_WIDTH_HIGH += value
             handle_config.setValue('THRESHOLD', 'FAIL_WIDTH_HIGH', handle_config.FAIL_WIDTH_HIGH)
+
+            for index, _ in enumerate(handle_config.LANE_FAIL_WIDTHS_HIGH):
+                handle_config.LANE_FAIL_WIDTHS_HIGH[index] = \
+                    handle_config.FAIL_WIDTH_HIGH / handle_config.WIDTH_RATIOS[index]
+            handle_config.setValue('THRESHOLD', 'LANE_FAIL_WIDTHS_HIGH', handle_config.LANE_FAIL_WIDTHS_HIGH)
+
             self.root.settings_win.max_length_text.set(handle_config.FAIL_WIDTH_HIGH)
         elif variable == 'FAIL_HEIGHT_LOW':
             handle_config.FAIL_HEIGHT_LOW += value
             handle_config.setValue('THRESHOLD', 'FAIL_HEIGHT_LOW', handle_config.FAIL_HEIGHT_LOW)
+
+            for index, _ in enumerate(handle_config.LANE_FAIL_HEIGHTS_LOW):
+                handle_config.LANE_FAIL_HEIGHTS_LOW[index] = \
+                    handle_config.FAIL_HEIGHT_LOW / handle_config.HEIGHT_RATIOS[index]
+            handle_config.setValue('THRESHOLD', 'LANE_FAIL_HEIGHTS_LOW', handle_config.LANE_FAIL_HEIGHTS_LOW)
+
             self.root.settings_win.min_thickness_text.set(handle_config.FAIL_HEIGHT_LOW)
         elif variable == 'FAIL_HEIGHT_HIGH':
             handle_config.FAIL_HEIGHT_HIGH += value
             handle_config.setValue('THRESHOLD', 'FAIL_HEIGHT_HIGH', handle_config.FAIL_HEIGHT_HIGH)
+
+            for index, _ in enumerate(handle_config.LANE_FAIL_HEIGHTS_HIGH):
+                handle_config.LANE_FAIL_HEIGHTS_HIGH[index] = \
+                    handle_config.FAIL_HEIGHT_HIGH / handle_config.HEIGHT_RATIOS[index]
+            handle_config.setValue('THRESHOLD', 'LANE_FAIL_HEIGHTS_HIGH', handle_config.LANE_FAIL_HEIGHTS_HIGH)
+
             self.root.settings_win.max_thickness_text.set(handle_config.FAIL_HEIGHT_HIGH)
 
     def settings_window(self, admin):
