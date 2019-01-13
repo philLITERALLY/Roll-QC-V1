@@ -186,7 +186,6 @@ class RunningWindow(threading.Thread):
 
     def settings_window_close(self):
         # Stop calibrate mode and start running again
-        print('CLOSE SETTINGS')
         program_state.set_calibrate_mode(False)
         program_state.set_thresh(False)
         program_state.set_run_mode(True)
