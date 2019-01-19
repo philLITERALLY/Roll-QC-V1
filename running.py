@@ -1,5 +1,12 @@
 '''This program performs Quality Control on Sub Rolls'''
 
+#
+import subprocess
+current_machine_id = subprocess.check_output('wmic csproduct get uuid').decode().split('\n')[1].strip()
+if current_machine_id != '03000200-0400-0500-0006-000700080009':
+    print 'Computer is not verified'
+    quit()
+
 # External Libraries
 import cv2
 import threading
