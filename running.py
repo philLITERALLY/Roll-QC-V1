@@ -24,7 +24,7 @@ handle_config.init() # config settings need loaded
 
 # AIO DLL
 import clr
-AIO_DLL = clr.AddReference(R'C:\Users\User\Roll-QC-V1\AIOWDMNet.dll')
+AIO_DLL = clr.AddReference(R'C:\Users\User\Documents\Low Cost Automation Ltd\AIOWDMNet.dll')
 from AIOWDMNet import AIOWDM # pylint: disable=E0401
 AIO_INSTANCE = AIOWDM()
 AIO_INSTANCE.RelOutPort(0, 0, 0) # Reset AIO to empty

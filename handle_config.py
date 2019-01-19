@@ -6,7 +6,7 @@ def getArray(config, section, variable):
 
 def setValue(section, variable, value):
     config.set(section, variable, str(value))   # Set new value
-    with open('config.ini', 'w') as configfile: # Save new value
+    with open(R'C:\Users\User\Documents\Low Cost Automation Ltd\config.ini', 'w') as configfile: # Save new value
         config.write(configfile)
 
 def init():
@@ -54,7 +54,7 @@ def init():
 
     # Load config file
     config = ConfigParser()
-    config.read('config.ini')
+    config.read(R'C:\Users\User\Documents\Low Cost Automation Ltd\config.ini')
 
     # Get Camera Settings
     CAM_WIDTH = config.getint('CAMERA', 'CAM_WIDTH')
