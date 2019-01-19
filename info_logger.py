@@ -55,7 +55,7 @@ def result(lane, width, height, frames):
     row.append(str(int(height / handle_config.HEIGHT_RATIOS[lane])))
     row.append(str(frames))
 
-    with open(my_path + '/results.csv', 'ab') as csvFile:
+    with open(R'C:/Users/User/Desktop/results.csv', 'ab') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerow(row)
 

@@ -13,6 +13,8 @@ import info_logger
 import buttons
 import handle_config
 
+my_path = os.path.abspath(os.path.dirname(__file__))
+
 LOGINS = get_logins.main()
 KEYCARD_VALUE = ''
 
@@ -206,7 +208,7 @@ class RunningWindow(threading.Thread):
         self.root.settings_win.destroy()
 
     def results_btn(self):
-        os.system(my_path + '/results.csv')
+        os.system(R'C:/Users/User/Desktop/results.csv')
 
     def calibrate_btn(self):
         program_state.request_calibration(True)
