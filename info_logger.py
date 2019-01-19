@@ -1,6 +1,7 @@
 ''' This module contains all functions and setup required for the programs logging '''
 
 # External Libraries
+import os
 import logging
 import datetime
 import csv
@@ -8,6 +9,8 @@ import csv
 # My Modules
 import variables
 import handle_config
+
+my_path = os.path.abspath(os.path.dirname(__file__))
 
 logging.basicConfig(filename='logging_' + datetime.datetime.now().strftime('%d-%m-%Y') + '.log', level=logging.DEBUG)
 
@@ -52,7 +55,7 @@ def result(lane, width, height, frames):
     row.append(str(int(height / handle_config.HEIGHT_RATIOS[lane])))
     row.append(str(frames))
 
-    with open(R'C:\Users\User\Roll-QC-V1\Locker\results.csv', 'ab') as csvFile:
+    with open(my_path + '/results.csv', 'ab') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerow(row)
 

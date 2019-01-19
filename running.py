@@ -8,6 +8,7 @@ if current_machine_id != '03000200-0400-0500-0006-000700080009':
     quit()
 
 # External Libraries
+import os
 import cv2
 import threading
 import numpy as np
@@ -24,7 +25,8 @@ handle_config.init() # config settings need loaded
 
 # AIO DLL
 import clr
-AIO_DLL = clr.AddReference(R'C:\Users\User\Roll-QC-V1\Locker\AIOWDMNet.dll')
+my_path = os.path.abspath(os.path.dirname(__file__))
+AIO_DLL = clr.AddReference(my_path + '/AIOWDMNet.dll')
 from AIOWDMNet import AIOWDM # pylint: disable=E0401
 AIO_INSTANCE = AIOWDM()
 AIO_INSTANCE.RelOutPort(0, 0, 0) # Reset AIO to empty

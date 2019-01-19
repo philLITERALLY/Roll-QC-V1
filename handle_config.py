@@ -1,12 +1,15 @@
 from ConfigParser import ConfigParser
 import ast
+import os
+
+my_path = os.path.abspath(os.path.dirname(__file__))
 
 def getArray(config, section, variable):
     return ast.literal_eval(config.get(section, variable))
 
 def setValue(section, variable, value):
     config.set(section, variable, str(value))   # Set new value
-    with open(R'C:\Users\User\Roll-QC-V1\Locker\config.ini', 'w') as configfile: # Save new value
+    with open(my_path + '/config.ini', 'w') as configfile: # Save new value
         config.write(configfile)
 
 def init():
@@ -54,7 +57,7 @@ def init():
 
     # Load config file
     config = ConfigParser()
-    config.read(R'C:\Users\User\Roll-QC-V1\Locker\config.ini')
+    config.read(my_path + '/config.ini')
 
     # Get Camera Settings
     CAM_WIDTH = config.getint('CAMERA', 'CAM_WIDTH')
