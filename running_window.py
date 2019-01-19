@@ -206,7 +206,7 @@ class RunningWindow(threading.Thread):
         self.root.settings_win.destroy()
 
     def results_btn(self):
-        os.system(R'C:\Users\User\Documents\Low Cost Automation Ltd\results.csv')
+        os.system(R'C:\Users\User\Roll-QC-V1\Locker\results.csv')
 
     def calibrate_btn(self):
         program_state.request_calibration(True)

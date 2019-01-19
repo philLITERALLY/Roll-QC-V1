@@ -6,7 +6,7 @@ def getArray(config, section, variable):
 
 def setValue(section, variable, value):
     config.set(section, variable, str(value))   # Set new value
-    with open(R'C:\Users\User\Documents\Low Cost Automation Ltd\config.ini', 'w') as configfile: # Save new value
+    with open(R'C:\Users\User\Roll-QC-V1\Locker\config.ini', 'w') as configfile: # Save new value
         config.write(configfile)
 
 def init():
@@ -14,7 +14,7 @@ def init():
     global config
 
     # Setup Camera Settings
-    global CAM_WIDTH, CAM_HEIGHT, CAM_FPS
+    global CAM_WIDTH, CAM_HEIGHT, CAM_FPS, CAM_EXPOSURE
 
     # Setup Crop Settings
     global FRAME_WIDTH_START, FRAME_WIDTH_END
@@ -54,12 +54,13 @@ def init():
 
     # Load config file
     config = ConfigParser()
-    config.read(R'C:\Users\User\Documents\Low Cost Automation Ltd\config.ini')
+    config.read(R'C:\Users\User\Roll-QC-V1\Locker\config.ini')
 
     # Get Camera Settings
     CAM_WIDTH = config.getint('CAMERA', 'CAM_WIDTH')
     CAM_HEIGHT = config.getint('CAMERA', 'CAM_HEIGHT')
     CAM_FPS = config.getint('CAMERA', 'CAM_FPS')
+    CAM_EXPOSURE = config.getint('CAMERA', 'CAM_EXPOSURE')
     FRAME_WIDTH = config.getint('CAMERA', 'FRAME_WIDTH')
     FRAME_HEIGHT = config.getint('CAMERA', 'FRAME_HEIGHT')
 

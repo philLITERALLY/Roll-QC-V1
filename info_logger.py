@@ -52,7 +52,7 @@ def result(lane, width, height, frames):
     row.append(str(int(height / handle_config.HEIGHT_RATIOS[lane])))
     row.append(str(frames))
 
-    with open(R'C:\Users\User\Documents\Low Cost Automation Ltd\results.csv', 'ab') as csvFile:
+    with open(R'C:\Users\User\Roll-QC-V1\Locker\results.csv', 'ab') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerow(row)
 
