@@ -34,6 +34,7 @@ LANE_FLAG = []           # array to hold Lane AIO Outputs
 THREADS = []             # array to hold threads
 THRESHOLD_IMG = []       # shared img
 RECTS_ARR = []           # array to hold rectangles
+PREV_RECTS_ARR = []      # array to hold last rectangles
 BOX_ARR = []             # array to hold contours
 AVG_WIDTHS_CURRENT = []  # array to hold [0] current avg width [1] total scanned
 AVG_HEIGHTS_CURRENT = [] # array to hold [0] current avg height [1] total scanned
@@ -48,6 +49,7 @@ for lane in range(handle_config.LANE_COUNT):
     AIO_ACTIONS.append(0)
     LANE_FLAG.append('')
     RECTS_ARR.append([])
+    PREV_RECTS_ARR.append([])
     BOX_ARR.append([])
     AVG_WIDTHS_CURRENT.append([0, 0])
     AVG_HEIGHTS_CURRENT.append([0, 0])
@@ -149,6 +151,12 @@ class statsThread (threading.Thread):
                 pass
 
             for lane in range(handle_config.LANE_COUNT):
+                # if lanes rectangle hasn't changed then skip
+                if RECTS_ARR[lane] == PREV_RECTS_ARR[lane]:
+                    continue
+                else:
+                    PREV_RECTS_ARR[lane] = RECTS_ARR[lane]
+
                 # If blob deteced within our scan section
                 if len(RECTS_ARR[lane]) > 0:
                     current_rect = RECTS_ARR[lane][:]
@@ -236,7 +244,7 @@ class imgProc (threading.Thread):
 
                     start_pos = min([position[0] for position in current_box])
                     high_pos = min([position[1] for position in current_box])
-                    low_pos = max([position[1] for position in current_box])
+                    low_pos = max([position[1] for position in current_box]) + 15
                     cv2.drawContours(CROPPED, [current_box], 0, color, 2)
                     cv2.putText(CROPPED, calc_dimensions, (start_pos, high_pos), handle_config.FONT, 1, color, 2)
 
@@ -283,8 +291,8 @@ class imgProc (threading.Thread):
             not_thresh_statement = (lane for lane in range(handle_config.LANE_COUNT) if not program_state.THRESH_MODE and not program_state.CALIBRATE_MODE)
             for lane in not_thresh_statement:
                 AVG_TEXT = 'AVG: 0%'
-                AVG_WIDTHS_TEXT = 'AVG WIDTH: ' + str(int(AVG_WIDTHS_TOTAL[lane][0] * handle_config.WIDTH_RATIOS[lane])) + 'mm'
-                AVG_HEIGHTS_TEXT = 'AVG HEIGHT: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * handle_config.HEIGHT_RATIOS[lane])) + 'mm'
+                AVG_WIDTHS_TEXT = 'AVG LENGTH: ' + str(int(AVG_WIDTHS_TOTAL[lane][0] * handle_config.WIDTH_RATIOS[lane])) + 'mm'
+                AVG_HEIGHTS_TEXT = 'AVG THICKNESS: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * handle_config.HEIGHT_RATIOS[lane])) + 'mm'
                 if PASS_COUNTS[lane] > 0:
                     AVG_TEXT = 'AVG: ' + str(100 * PASS_COUNTS[lane] / (PASS_COUNTS[lane] + FAIL_COUNTS[lane])) + '%'
                 cv2.putText(CROPPED, 'PASS: ' + str(PASS_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y), handle_config.FONT, 1, handle_config.RED, 2)
@@ -299,16 +307,19 @@ class imgProc (threading.Thread):
             cv2.rectangle(CROPPED, (handle_config.LANE_X1, handle_config.LANE_Y1), (handle_config.LANE_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
             cv2.rectangle(CROPPED, (handle_config.SPLIT_X1, handle_config.LANE_Y1), (handle_config.SPLIT_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
 
+            # Show Low Cost Automation Banner
+            cv2.putText(CROPPED, 'LOW COST AUTOMATION LTD.', (280, 60), handle_config.FONT, 2, handle_config.RED, 3)
+
             # Show current AIO
-            cv2.putText(CROPPED, 'OUTPUT: ' + str(OUTPUT), (350, 50), handle_config.FONT, 1, handle_config.RED, 2)
+            cv2.putText(CROPPED, 'OUTPUT: ' + str(OUTPUT), (350, 440), handle_config.FONT, 1, handle_config.RED, 2)
 
             # Show min/max values
-            max_length = 'Max Length = ' + str(int(handle_config.FAIL_WIDTH_HIGH)) + 'mm   '
-            min_length = 'Min Length = ' + str(int(handle_config.FAIL_WIDTH_LOW)) + 'mm    '
-            max_thickness = 'Max Thickness = ' + str(int(handle_config.FAIL_HEIGHT_HIGH)) + 'mm'
-            min_thickness = 'Min Thickness = ' + str(int(handle_config.FAIL_HEIGHT_LOW)) + 'mm'
-            cv2.putText(CROPPED, 'Current REJECT settings:-', (230, 950), handle_config.FONT, 1, handle_config.RED, 2)
-            cv2.line(CROPPED, (50, 965), (840, 965), handle_config.RED, 2)
+            max_length = 'MAX LENGTH = ' + str(int(handle_config.FAIL_WIDTH_HIGH)) + 'mm   '
+            min_length = 'MIN LENGTH = ' + str(int(handle_config.FAIL_WIDTH_LOW)) + 'mm    '
+            max_thickness = 'MAX THICKNESS = ' + str(int(handle_config.FAIL_HEIGHT_HIGH)) + 'mm'
+            min_thickness = 'MIN THICKNESS = ' + str(int(handle_config.FAIL_HEIGHT_LOW)) + 'mm'
+            cv2.putText(CROPPED, 'CURRENT REJECT SETTINGS', (240, 950), handle_config.FONT, 1, handle_config.RED, 2)
+            cv2.line(CROPPED, (50, 965), (875, 965), handle_config.RED, 2)
             cv2.putText(CROPPED, max_length + max_thickness, (50, 1000), handle_config.FONT, 1, handle_config.RED, 2)
             cv2.putText(CROPPED, min_length + min_thickness, (50, 1050), handle_config.FONT, 1, handle_config.RED, 2)
 
