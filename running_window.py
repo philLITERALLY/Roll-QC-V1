@@ -230,11 +230,11 @@ class RunningWindow(threading.Thread):
         # Create Placeholder for settings window
         self.root.settings_win = None
 
-        ws = self.root.winfo_screenwidth() # width of the screen
-        hs = self.root.winfo_screenheight() # height of the screen
+        ws = self.root.winfo_screenwidth() - 20 # width of the screen
+        hs = self.root.winfo_screenheight() - 20 # height of the screen
 
-        w = 390 # width for the Tk root
-        h = 214 # height for the Tk root
+        w = 150 # width for the Tk root
+        h = 75 # height for the Tk root
 
         # calculate x and y coordinates for the Tk root window
         x = ws - w

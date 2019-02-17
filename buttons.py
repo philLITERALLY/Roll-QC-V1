@@ -4,9 +4,9 @@ def resultsBtn(self):
     return Tkinter.Button(
         self.root,
         text='RESULTS',
-        font='Helvetica 24 bold',
-        width=20,
-        height=5,
+        font='Helvetica 18 bold',
+        width=10,
+        height=2,
         bg='blue',
         activebackground='blue',
         foreground='white',

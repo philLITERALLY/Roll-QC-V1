@@ -51,6 +51,7 @@ AVG_WIDTHS_TOTAL = []    # array to hold [0] current total width [1] total ran
 AVG_HEIGHTS_TOTAL = []   # array to hold [0] current total height [1] total ran
 PASS_COUNTS = []         # array to hold total pass count
 FAIL_COUNTS = []         # array to hold total fail count
+HISTORICAL_FAILS = []    # array to hold past 6 results for the lanes
 
 # Setup variables for number of lanes
 for lane in range(handle_config.LANE_COUNT):
@@ -66,6 +67,9 @@ for lane in range(handle_config.LANE_COUNT):
     AVG_HEIGHTS_TOTAL.append([0, 0])
     PASS_COUNTS.append(0)
     FAIL_COUNTS.append(0)
+    HISTORICAL_FAILS.append([])
+    for x in range(0, handle_config.LANE_HISTORY):
+        HISTORICAL_FAILS[lane].append(0)
 
 class lanePulseThread (threading.Thread):
     ''' One Per Lane '''
@@ -149,12 +153,12 @@ class statsThread (threading.Thread):
                     AIO_PASS_FAIL_PULSE[lane] = [0, 0]
                     AIO_ACTIONS[lane] = 0
                     LANE_FLAG[lane] = ''
-                    AVG_WIDTHS_CURRENT[lane] = [0, 0]
-                    AVG_HEIGHTS_CURRENT[lane] = [0, 0]
-                    AVG_WIDTHS_TOTAL[lane] = [0, 0]
-                    AVG_HEIGHTS_TOTAL[lane] = [0, 0]
-                    PASS_COUNTS[lane] = 0
-                    FAIL_COUNTS[lane] = 0
+                    # AVG_WIDTHS_CURRENT[lane] = [0, 0]
+                    # AVG_HEIGHTS_CURRENT[lane] = [0, 0]
+                    # AVG_WIDTHS_TOTAL[lane] = [0, 0]
+                    # AVG_HEIGHTS_TOTAL[lane] = [0, 0]
+                    # PASS_COUNTS[lane] = 0
+                    # FAIL_COUNTS[lane] = 0
 
                 # Skip everything else
                 pass
@@ -188,7 +192,6 @@ class statsThread (threading.Thread):
                 elif AVG_WIDTHS_CURRENT[lane][0] > 0 and AVG_HEIGHTS_CURRENT[lane][0] > 0:
                     average_width = AVG_WIDTHS_CURRENT[lane][0]
                     average_height = AVG_HEIGHTS_CURRENT[lane][0]
-                    frames_scanned = AVG_WIDTHS_CURRENT[lane][1]
 
                     # Calculate total AVG width and height
                     AVG_WIDTHS_TOTAL[lane] = self.calculate_avg(AVG_WIDTHS_TOTAL[lane], average_width)
@@ -200,11 +203,15 @@ class statsThread (threading.Thread):
                         average_height > handle_config.LANE_FAIL_HEIGHTS_HIGH[lane]:
                         FAIL_COUNTS[lane] += 1
                         LANE_FLAG[lane] = 'Fail'
+                        HISTORICAL_FAILS[lane].insert(0, 1)
                     else:
                         PASS_COUNTS[lane] += 1
                         LANE_FLAG[lane] = 'Pass'
+                        HISTORICAL_FAILS[lane].insert(0, 0)
 
-                    info_logger.result(lane, int(average_width), int(average_height), frames_scanned)
+                    HISTORICAL_FAILS[lane].pop()
+
+                    info_logger.result(lane, int(average_width), int(average_height))
 
                     # Reset arrays
                     AVG_WIDTHS_CURRENT[lane] = [0, 0]
@@ -299,25 +306,58 @@ class imgProc (threading.Thread):
             # Not Thresh Mode
             not_thresh_statement = (lane for lane in range(handle_config.LANE_COUNT) if not program_state.THRESH_MODE and not program_state.CALIBRATE_MODE)
             for lane in not_thresh_statement:
-                AVG_TEXT = 'AVG: 0%'
+                AVG_TEXT = '% PASSED: 0'
                 AVG_WIDTHS_TEXT = 'AVG LENGTH: ' + str(int(AVG_WIDTHS_TOTAL[lane][0] * handle_config.WIDTH_RATIOS[lane])) + 'mm'
                 AVG_HEIGHTS_TEXT = 'AVG THICKNESS: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * handle_config.HEIGHT_RATIOS[lane])) + 'mm'
                 if PASS_COUNTS[lane] > 0:
-                    AVG_TEXT = 'AVG: ' + str(100 * PASS_COUNTS[lane] / (PASS_COUNTS[lane] + FAIL_COUNTS[lane])) + '%'
-                cv2.putText(CROPPED, 'PASS: ' + str(PASS_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y), handle_config.FONT, 1, handle_config.RED, 2)
-                cv2.putText(CROPPED, 'FAIL: ' + str(FAIL_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 30), handle_config.FONT, 1, handle_config.RED, 2)
-                cv2.putText(CROPPED, AVG_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 60), handle_config.FONT, 1, handle_config.RED, 2)
+                    AVG_TEXT = '% PASSED: ' + str(100 * PASS_COUNTS[lane] / (PASS_COUNTS[lane] + FAIL_COUNTS[lane]))
+                cv2.putText(CROPPED, 'LANE ' + str(lane + 1), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.putText(CROPPED, 'PASS: ' + str(PASS_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 30), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.putText(CROPPED, 'FAIL: ' + str(FAIL_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 60), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.putText(CROPPED, AVG_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 90), handle_config.FONT, 1, handle_config.RED, 2)
                 if AVG_WIDTHS_TOTAL[lane][0] > 0:
-                    cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 90), handle_config.FONT, 1, handle_config.RED, 2)
+                    cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 120), handle_config.FONT, 1, handle_config.RED, 2)
                 if AVG_HEIGHTS_TOTAL[lane][0] > 0:
-                    cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 120), handle_config.FONT, 1, handle_config.RED, 2)
+                    cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 150), handle_config.FONT, 1, handle_config.RED, 2)
 
             # Show Lane Boundaries
             cv2.rectangle(CROPPED, (handle_config.LANE_X1, handle_config.LANE_Y1), (handle_config.LANE_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
             cv2.rectangle(CROPPED, (handle_config.SPLIT_X1, handle_config.LANE_Y1), (handle_config.SPLIT_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
 
+            # Lane Traffic Calculations
+            red_fail = '111111'
+            yellow_fail = '111'
+
+            # Lane 1 Traffic Light
+            lane_1_traffic_colour = handle_config.GREEN
+            lane_1_history = ''.join(str(e) for e in HISTORICAL_FAILS[0])
+            if red_fail in lane_1_history:
+                lane_1_traffic_colour = handle_config.RED
+            elif yellow_fail in lane_1_history:
+                lane_1_traffic_colour = handle_config.YELLOW
+            cv2.rectangle(CROPPED, (handle_config.TRAFFIC_LANE_1_X1, handle_config.TRAFFIC_Y1), (handle_config.TRAFFIC_LANE_1_X2, handle_config.TRAFFIC_Y2), lane_1_traffic_colour, -1)
+
+            # Lane 2 Traffic Light
+            lane_2_traffic_colour = handle_config.GREEN
+            lane_2_history = ''.join(str(e) for e in HISTORICAL_FAILS[1])
+            if red_fail in lane_2_history:
+                lane_2_traffic_colour = handle_config.RED
+            elif yellow_fail in lane_2_history:
+                lane_2_traffic_colour = handle_config.YELLOW
+            cv2.rectangle(CROPPED, (handle_config.TRAFFIC_LANE_2_X1, handle_config.TRAFFIC_Y1), (handle_config.TRAFFIC_LANE_2_X2, handle_config.TRAFFIC_Y2), lane_2_traffic_colour, -1)
+
+            # Lane 3 Traffic Light
+            lane_3_traffic_colour = handle_config.GREEN
+            lane_3_history = ''.join(str(e) for e in HISTORICAL_FAILS[2])
+            if red_fail in lane_3_history:
+                lane_3_traffic_colour = handle_config.RED
+            elif yellow_fail in lane_3_history:
+                lane_3_traffic_colour = handle_config.YELLOW
+            cv2.rectangle(CROPPED, (handle_config.TRAFFIC_LANE_3_X1, handle_config.TRAFFIC_Y1), (handle_config.TRAFFIC_LANE_3_X2, handle_config.TRAFFIC_Y2), lane_3_traffic_colour, -1)
+
             # Show Low Cost Automation Banner
-            cv2.putText(CROPPED, 'LOW COST AUTOMATION LTD.', (280, 60), handle_config.FONT, 2, handle_config.RED, 3)
+            cv2.putText(CROPPED, 'LOW COST AUTOMATION LTD.', (510, 60), handle_config.FONT, 1, handle_config.RED, 2)
+            cv2.putText(CROPPED, 'EasyBake', (670, 100), handle_config.FONT, 1, handle_config.RED, 2)
 
             # Show current AIO
             cv2.putText(CROPPED, 'OUTPUT: ' + str(OUTPUT), (350, 440), handle_config.FONT, 1, handle_config.RED, 2)

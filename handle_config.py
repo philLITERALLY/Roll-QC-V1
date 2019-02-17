@@ -42,6 +42,7 @@ def init():
     global LANE_HEIGHT, EDGE_GAP
     global LANE_WIDTH_START, LANE_WIDTH_END
     global LANE_HEIGHT_START, LANE_HEIGHT_END
+    global LANE_HISTORY
 
     # Draw Settings
     global FONT
@@ -51,6 +52,12 @@ def init():
 
     # Bounding Box Settings
     global LANE_X1, LANE_Y1, LANE_X2, LANE_Y2, SPLIT_X1, SPLIT_X2
+
+    # Traffic Lights Settings
+    global TRAFFIC_LANE_1_X1, TRAFFIC_LANE_1_X2
+    global TRAFFIC_LANE_2_X1, TRAFFIC_LANE_2_X2
+    global TRAFFIC_LANE_3_X1, TRAFFIC_LANE_3_X2
+    global TRAFFIC_Y1, TRAFFIC_Y2
 
     # AIO Settings
     global AIO_WAIT
@@ -111,6 +118,7 @@ def init():
     LANE_WIDTH_START = getArray(config, 'LANE', 'LANE_WIDTH_START')
     LANE_WIDTH_END = getArray(config, 'LANE', 'LANE_WIDTH_END')
     LANE_HEIGHT_START = getArray(config, 'LANE', 'LANE_HEIGHT_START')
+    LANE_HISTORY = config.getint('LANE', 'LANE_HISTORY')
 
     # Get Draw Settings
     FONT = config.getint('DRAW', 'FONT')
@@ -119,7 +127,7 @@ def init():
     YELLOW = getArray(config, 'DRAW', 'YELLOW')
     PASS_FAIL_X = getArray(config, 'DRAW', 'PASS_FAIL_X')
     PASS_FAIL_Y = getArray(config, 'DRAW', 'PASS_FAIL_Y')
-    TEXT_Y = LANE_HEIGHT_END - EDGE_GAP + 30
+    TEXT_Y = LANE_HEIGHT_END - EDGE_GAP + 60
 
     # Get Bounding Box Settings
     LANE_X1 = LANE_WIDTH_START[0]
@@ -128,6 +136,16 @@ def init():
     LANE_Y2 = LANE_HEIGHT_END - EDGE_GAP
     SPLIT_X1 = LANE_WIDTH_START[1]
     SPLIT_X2 = LANE_WIDTH_END[1]
+
+    # Setup Traffic Light Boxes
+    TRAFFIC_LANE_1_X1 = LANE_WIDTH_START[0]
+    TRAFFIC_LANE_1_X2 = LANE_WIDTH_END[0]
+    TRAFFIC_LANE_2_X1 = LANE_WIDTH_START[1]
+    TRAFFIC_LANE_2_X2 = LANE_WIDTH_END[1]
+    TRAFFIC_LANE_3_X1 = LANE_WIDTH_START[2]
+    TRAFFIC_LANE_3_X2 = LANE_WIDTH_END[2]
+    TRAFFIC_Y1 = LANE_HEIGHT_END - EDGE_GAP
+    TRAFFIC_Y2 = LANE_HEIGHT_END - EDGE_GAP + 30
 
     # Get AIO Settings
     AIO_WAIT = config.getfloat('AIO', 'AIO_WAIT')
