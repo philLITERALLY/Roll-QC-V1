@@ -13,6 +13,7 @@ import cv2
 import threading
 import numpy as np
 import time
+from Queue import Queue
 
 # My Modules
 import camera_setup
@@ -82,6 +83,7 @@ class lanePulseThread (threading.Thread):
     def run(self):
         global LANE_FLAG
         lane = self.lane
+
         while not program_state.STOP_PROGRAM:
             if program_state.RUN_MODE and LANE_FLAG[lane]: # if flag detected
                 if LANE_FLAG[lane] == 'Pass':
@@ -229,7 +231,17 @@ class imgProc (threading.Thread):
         global RECTS_ARR                           # contains current bounding rectangles
         global PASS_COUNTS, FAIL_COUNTS            # total counts
         global AVG_WIDTHS_TOTAL, AVG_HEIGHTS_TOTAL # average width/height
+        currentSecond = int(time.time())
+        frameCount = 0
+
         while not program_state.STOP_PROGRAM:
+            if currentSecond == int(time.time()):
+                frameCount = frameCount + 1
+            else:
+                print('Frames this second', frameCount)
+                currentSecond = int(time.time())
+                frameCount = 1
+
             _, FRAME = CAPTURE.read() # Take each FRAME
 
             CROPPED = FRAME[handle_config.FRAME_HEIGHT_START:handle_config.FRAME_HEIGHT_END, handle_config.FRAME_WIDTH_START:handle_config.FRAME_WIDTH_END]
@@ -241,7 +253,7 @@ class imgProc (threading.Thread):
                 DISPLAY_IMG = THRESHOLD_IMG
 
             for lane in range(handle_config.LANE_COUNT):
-                if RECTS_ARR[lane]:
+                if len(RECTS_ARR[lane]) > 0 and len(BOX_ARR[lane]) > 0:
                     color = handle_config.RED
                     current_rect = RECTS_ARR[lane]
                     current_box = BOX_ARR[lane]
