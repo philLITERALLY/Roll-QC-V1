@@ -167,57 +167,67 @@ class statsThread (threading.Thread):
 
             for lane in range(handle_config.LANE_COUNT):
                 # if lanes rectangle hasn't changed then skip
-                if RECTS_ARR[lane] == PREV_RECTS_ARR[lane]:
-                    continue
-                else:
-                    PREV_RECTS_ARR[lane] = RECTS_ARR[lane]
+                # if RECTS_ARR[lane] == PREV_RECTS_ARR[lane]:
+                    # continue
+                # else:
+                    # PREV_RECTS_ARR[lane] = RECTS_ARR[lane]
 
                 # If blob deteced within our scan section
-                if len(RECTS_ARR[lane]) > 0:
-                    current_rect = RECTS_ARR[lane][:]
+                if len(RECTS_ARR[lane]) > 0 and len(BOX_ARR[lane]) > 0:
+                    current_box = BOX_ARR[lane][:]
+                    print(lane, BOX_ARR[lane], current_box)
 
-                    try:
-                        if current_rect[1][0] > current_rect[1][1]:
-                            w = current_rect[1][0]
-                            h = current_rect[1][1]
-                        else:
-                            w = current_rect[1][1]
-                            h = current_rect[1][0]
+                    high_pos = max([position[1] for position in current_box])
+                    exiting_box = 460 + handle_config.LANE_HEIGHT - handle_config.EDGE_GAP
 
-                        # Calculate AVG width and height
-                        AVG_WIDTHS_CURRENT[lane] = self.calculate_avg(AVG_WIDTHS_CURRENT[lane], w)
-                        AVG_HEIGHTS_CURRENT[lane] = self.calculate_avg(AVG_HEIGHTS_CURRENT[lane], h)
-                    except Exception as e:
-                        info_logger.stats_error(lane, current_rect, RECTS_ARR, e)
+                    # if blob is exiting the box
+                    if high_pos > exiting_box:
+                        # if the averages haven't been added yet we add them
+                        if AVG_WIDTHS_CURRENT[lane][0] > 0 and AVG_HEIGHTS_CURRENT[lane][0] > 0:
+                            print(lane, 'set avg')
+                            average_width = AVG_WIDTHS_CURRENT[lane][0]
+                            average_height = AVG_HEIGHTS_CURRENT[lane][0]
 
-                # If no blob is detected
-                elif AVG_WIDTHS_CURRENT[lane][0] > 0 and AVG_HEIGHTS_CURRENT[lane][0] > 0:
-                    average_width = AVG_WIDTHS_CURRENT[lane][0]
-                    average_height = AVG_HEIGHTS_CURRENT[lane][0]
+                            # Calculate total AVG width and height
+                            AVG_WIDTHS_TOTAL[lane] = self.calculate_avg(AVG_WIDTHS_TOTAL[lane], average_width)
+                            AVG_HEIGHTS_TOTAL[lane] = self.calculate_avg(AVG_HEIGHTS_TOTAL[lane], average_height)
 
-                    # Calculate total AVG width and height
-                    AVG_WIDTHS_TOTAL[lane] = self.calculate_avg(AVG_WIDTHS_TOTAL[lane], average_width)
-                    AVG_HEIGHTS_TOTAL[lane] = self.calculate_avg(AVG_HEIGHTS_TOTAL[lane], average_height)
+                            if average_width < handle_config.LANE_FAIL_WIDTHS_LOW[lane] or \
+                                average_width > handle_config.LANE_FAIL_WIDTHS_HIGH[lane] or \
+                                average_height < handle_config.LANE_FAIL_HEIGHTS_LOW[lane] or \
+                                average_height > handle_config.LANE_FAIL_HEIGHTS_HIGH[lane]:
+                                FAIL_COUNTS[lane] += 1
+                                LANE_FLAG[lane] = 'Fail'
+                                HISTORICAL_FAILS[lane].insert(0, 1)
+                            else:
+                                PASS_COUNTS[lane] += 1
+                                LANE_FLAG[lane] = 'Pass'
+                                HISTORICAL_FAILS[lane].insert(0, 0)
 
-                    if average_width < handle_config.LANE_FAIL_WIDTHS_LOW[lane] or \
-                        average_width > handle_config.LANE_FAIL_WIDTHS_HIGH[lane] or \
-                        average_height < handle_config.LANE_FAIL_HEIGHTS_LOW[lane] or \
-                        average_height > handle_config.LANE_FAIL_HEIGHTS_HIGH[lane]:
-                        FAIL_COUNTS[lane] += 1
-                        LANE_FLAG[lane] = 'Fail'
-                        HISTORICAL_FAILS[lane].insert(0, 1)
+                            HISTORICAL_FAILS[lane].pop()
+
+                            info_logger.result(lane, int(average_width), int(average_height))
+
+                            # Reset arrays
+                            AVG_WIDTHS_CURRENT[lane] = [0, 0]
+                            AVG_HEIGHTS_CURRENT[lane] = [0, 0]
+                    # If a valid blob then count it
                     else:
-                        PASS_COUNTS[lane] += 1
-                        LANE_FLAG[lane] = 'Pass'
-                        HISTORICAL_FAILS[lane].insert(0, 0)
+                        current_rect = RECTS_ARR[lane][:]
 
-                    HISTORICAL_FAILS[lane].pop()
+                        try:
+                            if current_rect[1][0] > current_rect[1][1]:
+                                w = current_rect[1][0]
+                                h = current_rect[1][1]
+                            else:
+                                w = current_rect[1][1]
+                                h = current_rect[1][0]
 
-                    info_logger.result(lane, int(average_width), int(average_height))
-
-                    # Reset arrays
-                    AVG_WIDTHS_CURRENT[lane] = [0, 0]
-                    AVG_HEIGHTS_CURRENT[lane] = [0, 0]
+                            # Calculate AVG width and height
+                            AVG_WIDTHS_CURRENT[lane] = self.calculate_avg(AVG_WIDTHS_CURRENT[lane], w)
+                            AVG_HEIGHTS_CURRENT[lane] = self.calculate_avg(AVG_HEIGHTS_CURRENT[lane], h)
+                        except Exception as e:
+                            info_logger.stats_error(lane, current_rect, RECTS_ARR, e)
 
 class imgProc (threading.Thread):
     ''' Master '''
@@ -238,7 +248,7 @@ class imgProc (threading.Thread):
             if currentSecond == int(time.time()):
                 frameCount = frameCount + 1
             else:
-                print('Frames this second', frameCount)
+                # print('Frames this second', frameCount)
                 currentSecond = int(time.time())
                 frameCount = 1
 
@@ -272,9 +282,16 @@ class imgProc (threading.Thread):
 
                     start_pos = min([position[0] for position in current_box])
                     high_pos = min([position[1] for position in current_box])
+                    highest_pos = max([position[1] for position in current_box])
                     low_pos = max([position[1] for position in current_box]) + 15
-                    cv2.drawContours(CROPPED, [current_box], 0, color, 2)
-                    cv2.putText(CROPPED, calc_dimensions, (start_pos, high_pos), handle_config.FONT, 1, color, 2)
+
+                    exiting_box = 460 + handle_config.LANE_HEIGHT - handle_config.EDGE_GAP
+
+                    if highest_pos > exiting_box:
+                        cv2.drawContours(CROPPED, [current_box], 0, handle_config.ORANGE, 2)
+                    else:
+                        cv2.drawContours(CROPPED, [current_box], 0, color, 2)
+                        cv2.putText(CROPPED, calc_dimensions, (start_pos, high_pos), handle_config.FONT, 1, color, 2)
 
                     if program_state.CALIBRATE_MODE:
                         pixel_dimensions = '{0}px x {1}px'.format(int(w), int(h))
@@ -423,15 +440,11 @@ class laneThread (threading.Thread):
                 box = np.int64(box)
 
                 start_pos = min([position[1] for position in box])
-                high_pos = max([position[1] for position in box])
-                exiting_box = handle_config.LANE_HEIGHT - handle_config.EDGE_GAP
 
                 # if area big enough
                 # if contour within top bound
-                # if contour hasn't left bottom bound
                 if cv2.contourArea(contour) > handle_config.MIN_AREA and \
-                    start_pos > handle_config.EDGE_GAP and \
-                    high_pos < exiting_box:
+                    start_pos > handle_config.EDGE_GAP:
 
                     for position in box:
                         position[0] += handle_config.LANE_WIDTH_START[lane]

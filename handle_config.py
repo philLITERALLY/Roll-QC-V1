@@ -46,7 +46,7 @@ def init():
 
     # Draw Settings
     global FONT
-    global GREEN, RED, YELLOW
+    global GREEN, RED, ORANGE, YELLOW
     global PASS_FAIL_X, PASS_FAIL_Y
     global TEXT_Y
 
@@ -124,6 +124,7 @@ def init():
     FONT = config.getint('DRAW', 'FONT')
     GREEN = getArray(config, 'DRAW', 'GREEN')
     RED = getArray(config, 'DRAW', 'RED')
+    ORANGE = getArray(config, 'DRAW', 'ORANGE')
     YELLOW = getArray(config, 'DRAW', 'YELLOW')
     PASS_FAIL_X = getArray(config, 'DRAW', 'PASS_FAIL_X')
     PASS_FAIL_Y = getArray(config, 'DRAW', 'PASS_FAIL_Y')
