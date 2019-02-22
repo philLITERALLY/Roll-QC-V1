@@ -145,6 +145,7 @@ class statsThread (threading.Thread):
     def run(self):
         global LANE_FLAG                               # flag to alert AIO
         global RECTS_ARR                               # contains current bounding rectangles
+        global BOX_ARR                                 # contains current bounding boxes
         global PASS_COUNTS, FAIL_COUNTS                # total counts
         global AVG_WIDTHS_TOTAL, AVG_HEIGHTS_TOTAL     # total average width/height
         global AVG_WIDTHS_CURRENT, AVG_HEIGHTS_CURRENT # current average width/height
@@ -167,10 +168,10 @@ class statsThread (threading.Thread):
 
             for lane in range(handle_config.LANE_COUNT):
                 # if lanes rectangle hasn't changed then skip
-                # if RECTS_ARR[lane] == PREV_RECTS_ARR[lane]:
-                    # continue
-                # else:
-                    # PREV_RECTS_ARR[lane] = RECTS_ARR[lane]
+                if RECTS_ARR[lane] == PREV_RECTS_ARR[lane]:
+                    continue
+                else:
+                    PREV_RECTS_ARR[lane] = RECTS_ARR[lane]
 
                 # If blob deteced within our scan section
                 if len(RECTS_ARR[lane]) > 0 and len(BOX_ARR[lane]) > 0:
@@ -211,6 +212,7 @@ class statsThread (threading.Thread):
                             # Reset arrays
                             AVG_WIDTHS_CURRENT[lane] = [0, 0]
                             AVG_HEIGHTS_CURRENT[lane] = [0, 0]
+
                     # If a valid blob then count it
                     else:
                         current_rect = RECTS_ARR[lane][:]
