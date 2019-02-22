@@ -178,7 +178,9 @@ class statsThread (threading.Thread):
                     current_box = BOX_ARR[lane][:]
 
                     high_pos = max([position[1] for position in current_box])
-                    exiting_box = 460 + handle_config.LANE_HEIGHT - handle_config.EDGE_GAP
+                    exiting_box = handle_config.LANE_HEIGHT_START + \
+                        handle_config.LANE_HEIGHT - \
+                        handle_config.EDGE_GAP
 
                     # if blob is exiting the box
                     if high_pos > exiting_box:
@@ -277,7 +279,9 @@ class imgProc (threading.Thread):
                     highest_pos = max([position[1] for position in current_box])
                     low_pos = max([position[1] for position in current_box]) + 15
 
-                    exiting_box = 460 + handle_config.LANE_HEIGHT - handle_config.EDGE_GAP
+                    exiting_box = handle_config.LANE_HEIGHT_START + \
+                        handle_config.LANE_HEIGHT - \
+                        handle_config.EDGE_GAP
 
                     if highest_pos > exiting_box:
                         cv2.drawContours(CROPPED, [current_box], 0, handle_config.ORANGE, 2)
@@ -377,8 +381,8 @@ class imgProc (threading.Thread):
             cv2.rectangle(CROPPED, (handle_config.TRAFFIC_LANE_3_X1, handle_config.TRAFFIC_Y1), (handle_config.TRAFFIC_LANE_3_X2, handle_config.TRAFFIC_Y2), lane_3_traffic_colour, -1)
 
             # Show Low Cost Automation Banner
-            cv2.putText(CROPPED, 'LOW COST AUTOMATION LTD.', (510, 60), handle_config.FONT, 1, handle_config.RED, 2)
-            cv2.putText(CROPPED, 'EasyBake', (670, 100), handle_config.FONT, 1, handle_config.RED, 2)
+            cv2.putText(CROPPED, 'EasiBake Roll Checker', (390, 60), handle_config.FONT, 2, handle_config.RED, 3)
+            cv2.putText(CROPPED, 'Low Cost Automation Ltd', (530, 100), handle_config.FONT, 1, handle_config.RED, 2)
 
             # Show current AIO
             cv2.putText(CROPPED, 'OUTPUT: ' + str(OUTPUT), (350, 440), handle_config.FONT, 1, handle_config.RED, 2)
