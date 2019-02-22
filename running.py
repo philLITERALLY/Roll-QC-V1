@@ -176,7 +176,6 @@ class statsThread (threading.Thread):
                 # If blob deteced within our scan section
                 if len(RECTS_ARR[lane]) > 0 and len(BOX_ARR[lane]) > 0:
                     current_box = BOX_ARR[lane][:]
-                    print(lane, BOX_ARR[lane], current_box)
 
                     high_pos = max([position[1] for position in current_box])
                     exiting_box = 460 + handle_config.LANE_HEIGHT - handle_config.EDGE_GAP
@@ -185,7 +184,6 @@ class statsThread (threading.Thread):
                     if high_pos > exiting_box:
                         # if the averages haven't been added yet we add them
                         if AVG_WIDTHS_CURRENT[lane][0] > 0 and AVG_HEIGHTS_CURRENT[lane][0] > 0:
-                            print(lane, 'set avg')
                             average_width = AVG_WIDTHS_CURRENT[lane][0]
                             average_height = AVG_HEIGHTS_CURRENT[lane][0]
 
@@ -243,16 +241,8 @@ class imgProc (threading.Thread):
         global RECTS_ARR                           # contains current bounding rectangles
         global PASS_COUNTS, FAIL_COUNTS            # total counts
         global AVG_WIDTHS_TOTAL, AVG_HEIGHTS_TOTAL # average width/height
-        currentSecond = int(time.time())
-        frameCount = 0
 
         while not program_state.STOP_PROGRAM:
-            if currentSecond == int(time.time()):
-                frameCount = frameCount + 1
-            else:
-                # print('Frames this second', frameCount)
-                currentSecond = int(time.time())
-                frameCount = 1
 
             _, FRAME = CAPTURE.read() # Take each FRAME
 
