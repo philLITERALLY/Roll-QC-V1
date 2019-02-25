@@ -157,12 +157,6 @@ class statsThread (threading.Thread):
                     AIO_PASS_FAIL_PULSE[lane] = [0, 0]
                     AIO_ACTIONS[lane] = 0
                     LANE_FLAG[lane] = ''
-                    # AVG_WIDTHS_CURRENT[lane] = [0, 0]
-                    # AVG_HEIGHTS_CURRENT[lane] = [0, 0]
-                    # AVG_WIDTHS_TOTAL[lane] = [0, 0]
-                    # AVG_HEIGHTS_TOTAL[lane] = [0, 0]
-                    # PASS_COUNTS[lane] = 0
-                    # FAIL_COUNTS[lane] = 0
 
                 # Skip everything else
                 pass
@@ -462,12 +456,25 @@ class resultsExportThread (threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
+        global AVG_WIDTHS_CURRENT, AVG_HEIGHTS_CURRENT # current average width/height
+        global AVG_WIDTHS_TOTAL, AVG_HEIGHTS_TOTAL     # total average width/height
+        global PASS_COUNTS, FAIL_COUNTS                # total counts
+
         exporting = False
         while not program_state.STOP_PROGRAM:
             current_time = time.strftime('%X')
 
             if current_time in handle_config.EXPORT_TIMES:
                 if exporting == False:
+                    # Reset stats
+                    for lane in range(handle_config.LANE_COUNT):
+                        AVG_WIDTHS_CURRENT[lane] = [0, 0]
+                        AVG_HEIGHTS_CURRENT[lane] = [0, 0]
+                        AVG_WIDTHS_TOTAL[lane] = [0, 0]
+                        AVG_HEIGHTS_TOTAL[lane] = [0, 0]
+                        PASS_COUNTS[lane] = 0
+                        FAIL_COUNTS[lane] = 0
+
                     result_location = 'C:/Users/User/Desktop/results.csv'
                     template_location = 'C:/Users/User/Roll-QC-V1/Control Panel.{21EC2020-3AEA-1069-A2DD-08002B30309D}/results_template.csv'
                     destination = handle_config.FOLDER_LOCATION + time.strftime('%Y-%m-%d_%p') + '.csv'
