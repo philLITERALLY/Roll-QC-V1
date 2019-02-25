@@ -14,6 +14,7 @@ import threading
 import numpy as np
 import time
 from Queue import Queue
+from shutil import copyfile
 
 # My Modules
 import camera_setup
@@ -336,14 +337,14 @@ class imgProc (threading.Thread):
                 AVG_HEIGHTS_TEXT = 'AVG THICKNESS: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * handle_config.HEIGHT_RATIOS[lane])) + 'mm'
                 if PASS_COUNTS[lane] > 0:
                     AVG_TEXT = '% PASSED: ' + str(100 * PASS_COUNTS[lane] / (PASS_COUNTS[lane] + FAIL_COUNTS[lane]))
-                cv2.putText(CROPPED, 'LANE ' + str(lane + 1), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y), handle_config.FONT, 1, handle_config.RED, 2)
-                cv2.putText(CROPPED, 'PASS: ' + str(PASS_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 30), handle_config.FONT, 1, handle_config.RED, 2)
-                cv2.putText(CROPPED, 'FAIL: ' + str(FAIL_COUNTS[lane]), (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 60), handle_config.FONT, 1, handle_config.RED, 2)
-                cv2.putText(CROPPED, AVG_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 90), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.putText(CROPPED, 'LANE ' + str(lane + 1), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.putText(CROPPED, 'PASS: ' + str(PASS_COUNTS[lane]), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 30), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.putText(CROPPED, 'FAIL: ' + str(FAIL_COUNTS[lane]), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 60), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.putText(CROPPED, AVG_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 90), handle_config.FONT, 1, handle_config.RED, 2)
                 if AVG_WIDTHS_TOTAL[lane][0] > 0:
-                    cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 120), handle_config.FONT, 1, handle_config.RED, 2)
+                    cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 120), handle_config.FONT, 1, handle_config.RED, 2)
                 if AVG_HEIGHTS_TOTAL[lane][0] > 0:
-                    cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (handle_config.PASS_FAIL_X[lane], handle_config.TEXT_Y + 150), handle_config.FONT, 1, handle_config.RED, 2)
+                    cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 150), handle_config.FONT, 1, handle_config.RED, 2)
 
             # Show Lane Boundaries
             cv2.rectangle(CROPPED, (handle_config.LANE_X1, handle_config.LANE_Y1), (handle_config.LANE_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
@@ -385,7 +386,7 @@ class imgProc (threading.Thread):
             cv2.putText(CROPPED, 'Low Cost Automation Ltd', (530, 100), handle_config.FONT, 1, handle_config.RED, 2)
 
             # Show current AIO
-            cv2.putText(CROPPED, 'OUTPUT: ' + str(OUTPUT), (350, 440), handle_config.FONT, 1, handle_config.RED, 2)
+            cv2.putText(CROPPED, 'OUTPUT: ' + str(OUTPUT), (350, 435), handle_config.FONT, 1, handle_config.RED, 2)
 
             # Show min/max values
             max_length = 'MAX LENGTH = ' + str(int(handle_config.FAIL_WIDTH_HIGH)) + 'mm   '
@@ -452,9 +453,34 @@ class laneThread (threading.Thread):
             RECTS_ARR[lane] = LANE_RECTS
             BOX_ARR[lane] = LANE_BOXES
 
+
+class resultsExportThread (threading.Thread):
+    ''' One Per Lane '''
+    ''' This thread listens for pass/fail flags '''
+    ''' After a delay sets the AIO value and clears the flag '''
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def run(self):
+        exporting = False
+        while not program_state.STOP_PROGRAM:
+            current_time = time.strftime('%X')
+
+            if current_time in handle_config.EXPORT_TIMES:
+                if exporting == False:
+                    result_location = 'C:/Users/User/Desktop/results.csv'
+                    template_location = 'C:/Users/User/Roll-QC-V1/Control Panel.{21EC2020-3AEA-1069-A2DD-08002B30309D}/results_template.csv'
+                    destination = handle_config.FOLDER_LOCATION + time.strftime('%Y-%m-%d_%p') + '.csv'
+                    copyfile(result_location, destination)
+                    copyfile(template_location, result_location)
+                    exporting = True
+            else:
+                exporting = False
+
 THREADS.append(aioThread())
 THREADS.append(statsThread())
 THREADS.append(imgProc())
+THREADS.append(resultsExportThread())
 
 for lane in range(handle_config.LANE_COUNT):
     THREADS.append(lanePulseThread(lane))

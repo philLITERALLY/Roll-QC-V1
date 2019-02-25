@@ -47,7 +47,7 @@ def init():
     # Draw Settings
     global FONT
     global GREEN, RED, ORANGE, YELLOW
-    global PASS_FAIL_X, PASS_FAIL_Y
+    global PASS_FAIL_Y
     global TEXT_Y
 
     # Bounding Box Settings
@@ -61,6 +61,9 @@ def init():
 
     # AIO Settings
     global AIO_WAIT
+
+    # Results Settings
+    global EXPORT_TIMES, FOLDER_LOCATION
 
     # Load config file
     config = ConfigParser()
@@ -126,7 +129,6 @@ def init():
     RED = getArray(config, 'DRAW', 'RED')
     ORANGE = getArray(config, 'DRAW', 'ORANGE')
     YELLOW = getArray(config, 'DRAW', 'YELLOW')
-    PASS_FAIL_X = getArray(config, 'DRAW', 'PASS_FAIL_X')
     PASS_FAIL_Y = getArray(config, 'DRAW', 'PASS_FAIL_Y')
     TEXT_Y = LANE_HEIGHT_END - EDGE_GAP + 60
 
@@ -150,6 +152,10 @@ def init():
 
     # Get AIO Settings
     AIO_WAIT = config.getfloat('AIO', 'AIO_WAIT')
+
+    # Get Results Settings
+    EXPORT_TIMES = getArray(config, 'RESULTS', 'EXPORT_TIMES')
+    FOLDER_LOCATION = config.get('RESULTS', 'FOLDER_LOCATION')
 
     # Get Crop Settings
     CAM_WIDTH_MIDPOINT = CAM_WIDTH / 2
