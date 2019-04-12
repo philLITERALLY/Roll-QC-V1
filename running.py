@@ -3,8 +3,8 @@
 #
 import subprocess
 current_machine_id = subprocess.check_output('wmic csproduct get uuid').decode().split('\n')[1].strip()
-if current_machine_id != '03000200-0400-0500-0006-000700080009':
-    print 'Computer is not verified'
+if current_machine_id != '4C4C4544-004E-3810-8052-B4C04F4A354A':
+    print('Computer is not verified')
     quit()
 
 # External Libraries
