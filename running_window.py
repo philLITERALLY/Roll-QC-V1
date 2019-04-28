@@ -23,7 +23,7 @@ class RunningWindow(threading.Thread):
         global KEYCARD_VALUE
         KEYCARD_VALUE += event.char
         if event.keysym == 'Escape':
-            program_state.stop_program(True)
+            program_state.stop_program()
 
     def enter(self, event):
         global KEYCARD_VALUE

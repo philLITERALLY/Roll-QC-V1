@@ -15,9 +15,11 @@ import numpy as np
 import time
 from Queue import Queue
 from shutil import copyfile
+import sys, traceback, random
 
 # My Modules
-import camera_setup
+from camera_setup import WebcamVideoStream
+from FPS import FPS
 import running_window
 import program_state
 import variables
@@ -33,7 +35,26 @@ from AIOWDMNet import AIOWDM # pylint: disable=E0401
 AIO_INSTANCE = AIOWDM()
 AIO_INSTANCE.RelOutPort(0, 0, 0) # Reset AIO to empty
 
-CAPTURE = camera_setup.main() # Get camera stream
+CAPTURE = []
+CAM_FRAME = []
+for camera in range(1):
+    CAPTURE.append(WebcamVideoStream(src=camera).start()) # Get camera stream
+    CAPTURE[camera].stream.set(3, 3246) # handle_config.CAM_WIDTH)
+    CAPTURE[camera].stream.set(4, 2448) # handle_config.CAM_HEIGHT)
+    CAPTURE[camera].stream.set(5, 900)
+    # 3246 x 2448 8mp 26.32fps
+    # 3072 x 2304 7mp 24.67fps
+    # 3032 x 2008 6mp 42.54fps
+    # 2560 x 1920 5mp 41.85fps
+    # 2240 x 1680 4mp 65.49fps
+    # 2048 x 1536 3mp
+    # 1280 x 960  2mp
+    time.sleep(2)
+    CAPTURE[camera].stream.set(cv2.CAP_PROP_EXPOSURE, -6.0)
+
+    CAM_FRAME.append(CAPTURE[camera].read()) # Read frame from camera
+
+    info_logger.camera_settings(CAPTURE[camera].stream)
 
 app = running_window.RunningWindow() # GetUI instance
 app.start() # Start UI
@@ -238,12 +259,12 @@ class imgProc (threading.Thread):
         global RECTS_ARR                           # contains current bounding rectangles
         global PASS_COUNTS, FAIL_COUNTS            # total counts
         global AVG_WIDTHS_TOTAL, AVG_HEIGHTS_TOTAL # average width/height
+        global fpsUI # fps counter
+        fpsUI = FPS().start()
 
         while not program_state.STOP_PROGRAM:
-
-            _, FRAME = CAPTURE.read() # Take each FRAME
-
-            CROPPED = FRAME[handle_config.FRAME_HEIGHT_START:handle_config.FRAME_HEIGHT_END, handle_config.FRAME_WIDTH_START:handle_config.FRAME_WIDTH_END]
+            fpsUI.update()
+            CROPPED = CAPTURE[0].read() # [handle_config.FRAME_HEIGHT_START:handle_config.FRAME_HEIGHT_END, handle_config.FRAME_WIDTH_START:handle_config.FRAME_WIDTH_END]
             GRAY = cv2.cvtColor(CROPPED, cv2.COLOR_BGR2GRAY)                    # Turn image to Grayscale
             _, THRESHOLD_IMG = cv2.threshold(GRAY, handle_config.WHITE_THRESH, 255, 0) # Run threshold on gray image
             DISPLAY_IMG = CROPPED
@@ -396,10 +417,11 @@ class imgProc (threading.Thread):
             if DISPLAY_IMG != []:
                 cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
                 cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+                DISPLAY_IMG = cv2.resize(DISPLAY_IMG, (1280, 720), interpolation = cv2.INTER_AREA)
                 cv2.imshow(window_name, DISPLAY_IMG)
 
             # Required for loop no need for key read
-            k = cv2.waitKey(1) & 0xFF
+            _ = cv2.waitKey(1) & 0xFF
 
 class laneThread (threading.Thread):
     def __init__(self, lane):
@@ -407,12 +429,17 @@ class laneThread (threading.Thread):
       self.lane = lane
 
     def run(self):
-        global THRESHOLD_IMG # Thresholded image
         global RECTS_ARR     # contains current bounding rectangles
+        global fpsProc # fpsProc counter
+        fpsProc = FPS().start()
+
         while not program_state.STOP_PROGRAM:
             lane = self.lane
-            while len(THRESHOLD_IMG) == 0:
-                pass
+            fpsProc.update() # update fpsProc counter
+
+            IMG = CAPTURE[0].read() # Read frame from camera
+            GRAY = cv2.cvtColor(IMG, cv2.COLOR_BGR2GRAY)                    # Turn image to Grayscale
+            _, THRESHOLD_IMG = cv2.threshold(GRAY, handle_config.WHITE_THRESH, 255, 0) # Run threshold on gray image
 
             LANE_RECTS = []
             LANE_BOXES = []
@@ -446,7 +473,6 @@ class laneThread (threading.Thread):
 
             RECTS_ARR[lane] = LANE_RECTS
             BOX_ARR[lane] = LANE_BOXES
-
 
 class resultsExportThread (threading.Thread):
     ''' One Per Lane '''
@@ -498,6 +524,9 @@ for thread in THREADS:
 
 # Wait for stop program
 while program_state.STOP_PROGRAM == False:
+    if fpsProc.elapsed() >= 5:
+        program_state.stop_program()
+        continue
     pass
 
 print('Stopping')
@@ -508,7 +537,29 @@ for t in THREADS:
 
 print('Exiting Main Thread')
 
-CAPTURE.release() # Release everything if job is finished
+print('Stop FPS counter')
+fpsProc.stop()
+fpsUI.stop()
+print("[INFO] Process elasped time: {:.2f}".format(fpsProc.finished()))
+print("[INFO] Process approx. FPS: {:.2f}".format(fpsProc.fps()))
+print("[INFO] UI elasped time: {:.2f}".format(fpsUI.finished()))
+print("[INFO] UI approx. FPS: {:.2f}".format(fpsUI.fps()))
+
+print('Resetting AIO')
 AIO_INSTANCE.RelOutPort(0, 0, 0) # Reset AIO to empty
+
+for camera in range(1):
+    print 'Stopping Camera: ' + str(camera + 1)
+    WebcamVideoStream(src=camera).stop()
+
+print('Destroy OpenCV Window')
 cv2.destroyAllWindows() # Destroy all opencv windows
+print('Destroy tkInter')
 app.root.destroy() # Destroy tkInter windows
+
+thread_names = {t.ident: t.name for t in threading.enumerate()}
+for thread_id, frame in sys._current_frames().iteritems():
+    print('Thread %s:' % thread_names.get(thread_id, thread_id))
+    traceback.print_stack(frame)
+
+print('Completely Exited')
