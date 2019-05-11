@@ -4,13 +4,16 @@ import os
 
 my_path = os.path.abspath(os.path.dirname(__file__))
 
+
 def getArray(config, section, variable):
     return ast.literal_eval(config.get(section, variable))
 
+
 def setValue(section, variable, value):
     config.set(section, variable, str(value))   # Set new value
-    with open(my_path + '/config.ini', 'w') as configfile: # Save new value
+    with open(my_path + '/config.ini', 'w') as configfile:  # Save new value
         config.write(configfile)
+
 
 def init():
     # Config File
@@ -51,12 +54,13 @@ def init():
     global TEXT_Y
 
     # Bounding Box Settings
-    global LANE_X1, LANE_Y1, LANE_X2, LANE_Y2, SPLIT_X1, SPLIT_X2
+    global LANE_X1, LANE_Y1, LANE_X2, LANE_Y2, SPLIT_X1, SPLIT_X2, SPLIT_X3, SPLIT_X4
 
     # Traffic Lights Settings
     global TRAFFIC_LANE_1_X1, TRAFFIC_LANE_1_X2
     global TRAFFIC_LANE_2_X1, TRAFFIC_LANE_2_X2
     global TRAFFIC_LANE_3_X1, TRAFFIC_LANE_3_X2
+    global TRAFFIC_LANE_4_X1, TRAFFIC_LANE_4_X2
     global TRAFFIC_Y1, TRAFFIC_Y2
 
     # AIO Settings
@@ -139,6 +143,8 @@ def init():
     LANE_Y2 = LANE_HEIGHT_END - EDGE_GAP
     SPLIT_X1 = LANE_WIDTH_START[1]
     SPLIT_X2 = LANE_WIDTH_END[1]
+    SPLIT_X3 = LANE_WIDTH_START[2]
+    SPLIT_X4 = LANE_WIDTH_END[2]
 
     # Setup Traffic Light Boxes
     TRAFFIC_LANE_1_X1 = LANE_WIDTH_START[0]
@@ -147,6 +153,8 @@ def init():
     TRAFFIC_LANE_2_X2 = LANE_WIDTH_END[1]
     TRAFFIC_LANE_3_X1 = LANE_WIDTH_START[2]
     TRAFFIC_LANE_3_X2 = LANE_WIDTH_END[2]
+    TRAFFIC_LANE_4_X1 = LANE_WIDTH_START[3]
+    TRAFFIC_LANE_4_X2 = LANE_WIDTH_END[3]
     TRAFFIC_Y1 = LANE_HEIGHT_END - EDGE_GAP
     TRAFFIC_Y2 = LANE_HEIGHT_END - EDGE_GAP + 30
 
