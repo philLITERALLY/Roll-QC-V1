@@ -35,26 +35,14 @@ from AIOWDMNet import AIOWDM # pylint: disable=E0401
 AIO_INSTANCE = AIOWDM()
 AIO_INSTANCE.RelOutPort(0, 0, 0) # Reset AIO to empty
 
-CAPTURE = []
-CAM_FRAME = []
-for camera in range(1):
-    CAPTURE.append(WebcamVideoStream(src=1).start()) # Get camera stream
-    CAPTURE[camera].stream.set(3, 3246) # handle_config.CAM_WIDTH)
-    CAPTURE[camera].stream.set(4, 2448) # handle_config.CAM_HEIGHT)
-    CAPTURE[camera].stream.set(5, 900)
-    # 3246 x 2448 8mp 26.32fps
-    # 3072 x 2304 7mp 24.67fps
-    # 3032 x 2008 6mp 42.54fps
-    # 2560 x 1920 5mp 41.85fps
-    # 2240 x 1680 4mp 65.49fps
-    # 2048 x 1536 3mp
-    # 1280 x 960  2mp
-    time.sleep(2)
-    CAPTURE[camera].stream.set(cv2.CAP_PROP_EXPOSURE, -6.0)
-
-    CAM_FRAME.append(CAPTURE[camera].read()) # Read frame from camera
-
-    info_logger.camera_settings(CAPTURE[camera].stream)
+CAPTURE = WebcamVideoStream(src=0).start() # Get camera stream
+CAPTURE.stream.set(3, handle_config.CAM_WIDTH)
+CAPTURE.stream.set(4, handle_config.CAM_HEIGHT)
+CAPTURE.stream.set(5, 900)
+time.sleep(2)
+CAPTURE.stream.set(cv2.CAP_PROP_EXPOSURE, -6.0)
+CAM_FRAME = CAPTURE.read() # Read frame from camera
+info_logger.camera_settings(CAPTURE.stream)
 
 app = running_window.RunningWindow() # GetUI instance
 app.start() # Start UI
@@ -171,6 +159,7 @@ class statsThread (threading.Thread):
         global PASS_COUNTS, FAIL_COUNTS                # total counts
         global AVG_WIDTHS_TOTAL, AVG_HEIGHTS_TOTAL     # total average width/height
         global AVG_WIDTHS_CURRENT, AVG_HEIGHTS_CURRENT # current average width/height
+
         while not program_state.STOP_PROGRAM:
             if not program_state.RUN_MODE:
                 # Reset stats
@@ -261,19 +250,20 @@ class imgProc (threading.Thread):
         global AVG_WIDTHS_TOTAL, AVG_HEIGHTS_TOTAL # average width/height
         global fpsUI # fps counter
         fpsUI = FPS().start()
+        update_display = False
 
         while not program_state.STOP_PROGRAM:
-            if program_state.RUN_MODE:
-                fpsUI.update()
-                CROPPED = CAPTURE[0].read() # [handle_config.FRAME_HEIGHT_START:handle_config.FRAME_HEIGHT_END, handle_config.FRAME_WIDTH_START:handle_config.FRAME_WIDTH_END]
-                GRAY = cv2.cvtColor(CROPPED, cv2.COLOR_BGR2GRAY)                    # Turn image to Grayscale
-                _, THRESHOLD_IMG = cv2.threshold(GRAY, handle_config.WHITE_THRESH, 255, 0) # Run threshold on gray image
-                DISPLAY_IMG = CROPPED
+            fpsUI.update()
+            CROPPED = CAPTURE.read() # [handle_config.FRAME_HEIGHT_START:handle_config.FRAME_HEIGHT_END, handle_config.FRAME_WIDTH_START:handle_config.FRAME_WIDTH_END]
+            GRAY = cv2.cvtColor(CROPPED, cv2.COLOR_BGR2GRAY)                    # Turn image to Grayscale
+            _, THRESHOLD_IMG = cv2.threshold(GRAY, handle_config.WHITE_THRESH, 255, 0) # Run threshold on gray image
+            DISPLAY_IMG = CROPPED
 
-                if program_state.THRESH_MODE:
-                    DISPLAY_IMG = THRESHOLD_IMG
-
-                for lane in range(handle_config.LANE_COUNT):
+            if program_state.THRESH_MODE:
+                DISPLAY_IMG = THRESHOLD_IMG
+            else:
+                for lane in range(1, 2): # handle_config.LANE_COUNT):
+                    update_display = False
                     if len(RECTS_ARR[lane]) > 0 and len(BOX_ARR[lane]) > 0:
                         color = handle_config.RED
                         current_rect = RECTS_ARR[lane]
@@ -302,9 +292,11 @@ class imgProc (threading.Thread):
 
                         if highest_pos > exiting_box:
                             cv2.drawContours(CROPPED, [current_box], 0, handle_config.ORANGE, 2)
+                            pass
                         else:
                             cv2.drawContours(CROPPED, [current_box], 0, color, 2)
                             cv2.putText(CROPPED, calc_dimensions, (start_pos, high_pos), handle_config.FONT, 1, color, 2)
+                            update_display = True
 
                         if program_state.CALIBRATE_MODE:
                             pixel_dimensions = '{0}px x {1}px'.format(int(w), int(h))
@@ -346,8 +338,8 @@ class imgProc (threading.Thread):
                     program_state.request_calibration(False)
 
                 # Not Thresh Mode
-                not_thresh_statement = (lane for lane in range(handle_config.LANE_COUNT) if not program_state.THRESH_MODE and not program_state.CALIBRATE_MODE)
-                for lane in not_thresh_statement:
+                not_calib_statement = (lane for lane in range(handle_config.LANE_COUNT) if not program_state.CALIBRATE_MODE)
+                for lane in not_calib_statement:
                     AVG_TEXT = '% PASSED: 0'
                     AVG_WIDTHS_TEXT = 'AVG LENGTH: ' + str(int(AVG_WIDTHS_TOTAL[lane][0] * handle_config.WIDTH_RATIOS[lane])) + 'mm'
                     AVG_HEIGHTS_TEXT = 'AVG THICKNESS: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * handle_config.HEIGHT_RATIOS[lane])) + 'mm'
@@ -408,8 +400,8 @@ class imgProc (threading.Thread):
                 cv2.rectangle(CROPPED, (handle_config.TRAFFIC_LANE_4_X1, handle_config.TRAFFIC_Y1), (handle_config.TRAFFIC_LANE_4_X2, handle_config.TRAFFIC_Y2), lane_4_traffic_colour, -1)
 
                 # Show Low Cost Automation Banner
-                cv2.putText(CROPPED, 'EasiBake Roll Checker', (775, 100), handle_config.FONT, 3, handle_config.RED, 4)
-                cv2.putText(CROPPED, 'Low Cost Automation Ltd', (915, 160), handle_config.FONT, 2, handle_config.RED, 3)
+                cv2.putText(CROPPED, 'EasiBake Roll Checker', (760, 100), handle_config.FONT, 3, handle_config.RED, 4)
+                cv2.putText(CROPPED, 'Low Cost Automation Ltd', (900, 160), handle_config.FONT, 2, handle_config.RED, 3)
 
                 # Show current AIO
                 cv2.putText(CROPPED, 'OUTPUT: ' + str(OUTPUT), (950, 890), handle_config.FONT, 1, handle_config.RED, 2)
@@ -424,15 +416,15 @@ class imgProc (threading.Thread):
                 cv2.putText(CROPPED, max_length + max_thickness, (50, 1850), handle_config.FONT, 1, handle_config.RED, 2)
                 cv2.putText(CROPPED, min_length + min_thickness, (50, 1900), handle_config.FONT, 1, handle_config.RED, 2)
 
-                window_name = 'LINE VIEW'
-                if DISPLAY_IMG != []:
-                    cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
-                    cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-                    DISPLAY_IMG = cv2.resize(DISPLAY_IMG, (1280, 720), interpolation = cv2.INTER_AREA)
-                    cv2.imshow(window_name, DISPLAY_IMG)
+            window_name = 'LINE VIEW'
+            if DISPLAY_IMG != [] and update_display:
+                cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
+                cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+                DISPLAY_IMG = cv2.resize(DISPLAY_IMG, (1600, 900), interpolation = cv2.INTER_AREA)
+                cv2.imshow(window_name, DISPLAY_IMG)
 
-                # Required for loop no need for key read
-                _ = cv2.waitKey(1) & 0xFF
+            # Required for loop no need for key read
+            _ = cv2.waitKey(1) & 0xFF
 
 class laneThread (threading.Thread):
     def __init__(self, lane):
@@ -449,12 +441,10 @@ class laneThread (threading.Thread):
                 lane = self.lane
                 fpsProc.update() # update fpsProc counter
 
-                IMG = CAPTURE[0].read() # Read frame from camera
+                IMG = CAPTURE.read() # Read frame from camera
                 GRAY = cv2.cvtColor(IMG, cv2.COLOR_BGR2GRAY)                    # Turn image to Grayscale
                 _, THRESHOLD_IMG = cv2.threshold(GRAY, handle_config.WHITE_THRESH, 255, 0) # Run threshold on gray image
 
-                LANE_RECTS = []
-                LANE_BOXES = []
                 THRESH_LANE_IMG = THRESHOLD_IMG[handle_config.LANE_HEIGHT_START:handle_config.LANE_HEIGHT_END, handle_config.LANE_WIDTH_START[lane]:handle_config.LANE_WIDTH_END[lane]]
 
                 # run opencv find contours, only external boxes
@@ -480,11 +470,8 @@ class laneThread (threading.Thread):
                             position[0] += handle_config.LANE_WIDTH_START[lane]
                             position[1] += handle_config.LANE_HEIGHT_START
 
-                        LANE_RECTS = rect
-                        LANE_BOXES = box
-
-                RECTS_ARR[lane] = LANE_RECTS
-                BOX_ARR[lane] = LANE_BOXES
+                        RECTS_ARR[lane] = rect
+                        BOX_ARR[lane] = box
 
 class resultsExportThread (threading.Thread):
     ''' One Per Lane '''
@@ -514,8 +501,8 @@ class resultsExportThread (threading.Thread):
                             PASS_COUNTS[lane] = 0
                             FAIL_COUNTS[lane] = 0
 
-                        result_location = 'C:/Users/User/Desktop/results.csv'
-                        template_location = 'C:/Users/User/Roll-QC-V1/Control Panel.{21EC2020-3AEA-1069-A2DD-08002B30309D}/results_template.csv'
+                        result_location = 'C:/Users/customer/Desktop/results.csv'
+                        template_location = 'C:/Users/customer/Roll-QC-V1/Control Panel.{21EC2020-3AEA-1069-A2DD-08002B30309D}/results_template.csv'
                         destination = handle_config.FOLDER_LOCATION + time.strftime('%Y-%m-%d_%p') + '.csv'
                         copyfile(result_location, destination)
                         copyfile(template_location, result_location)
@@ -534,13 +521,6 @@ for lane in range(handle_config.LANE_COUNT):
 
 for thread in THREADS:
     thread.start()
-
-# Wait for stop program
-#while program_state.STOP_PROGRAM == False:
-    #if fpsProc.elapsed() >= 500:
-        #program_state.stop_program()
-        #continue
-    #pass
 
 print('Stopping')
 
@@ -561,19 +541,9 @@ print("[INFO] UI approx. FPS: {:.2f}".format(fpsUI.fps()))
 print('Resetting AIO')
 AIO_INSTANCE.RelOutPort(0, 0, 0) # Reset AIO to empty
 
-for camera in range(1):
-    print 'Stopping Camera: ' + str(camera + 1)
-    WebcamVideoStream(src=camera).stop()
-
 print('Destroy OpenCV Window')
 cv2.destroyAllWindows() # Destroy all opencv windows
 print('Destroy tkInter')
 app.root.destroy() # Destroy tkInter windows
 
-thread_names = {t.ident: t.name for t in threading.enumerate()}
-for thread_id, frame in sys._current_frames().iteritems():
-    print('Thread %s:' % thread_names.get(thread_id, thread_id))
-    traceback.print_stack(frame)
-
-sys.exit()
 print('Completely Exited')

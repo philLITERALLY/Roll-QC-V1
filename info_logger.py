@@ -12,7 +12,8 @@ import handle_config
 
 my_path = os.path.abspath(os.path.dirname(__file__))
 
-logging.basicConfig(filename='logging_' + datetime.datetime.now().strftime('%d-%m-%Y') + '.log', level=logging.DEBUG)
+logging.basicConfig(filename='logging_' +
+                    datetime.datetime.now().strftime('%d-%m-%Y') + '.log', level=logging.DEBUG)
 
 
 def init():
@@ -32,6 +33,7 @@ def camera_settings(capture):
             ' - ' + str(capture.get(camera_setting))
         )
 
+
 def settings_access(keycard_value, username):
     ''' This function writes the settings_access information to the log '''
     logging.info(' ')
@@ -40,12 +42,14 @@ def settings_access(keycard_value, username):
     logging.info('  Username: %s', username)
     logging.info('  Time: %s', datetime.datetime.now())
 
+
 def settings_access_error(keycard_value):
     ''' This function writes failed settings access attempt information to the log '''
     logging.error(' ')
     logging.error('Settings Access Fail:')
     logging.error('  Keycard Value: %s', keycard_value)
     logging.error('  Time: %s', datetime.datetime.now())
+
 
 def result(lane, width, height):
     ''' This adds a row result to CSV file '''
@@ -55,17 +59,19 @@ def result(lane, width, height):
     row.append(str(int(height * handle_config.HEIGHT_RATIOS[lane])))
     row.append(str(int(width * height)))
 
-    with open(R'C:/Users/User/Desktop/results.csv', 'ab') as csvFile:
+    with open(R'C:/Users/customer/Desktop/results.csv', 'ab') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerow(row)
 
     csvFile.close()
+
 
 def shutdown():
     ''' This function writes the shutdown information to the log '''
     logging.info(' ')
     logging.info('End: %s', str(datetime.datetime.now()))
     logging.info(' ')
+
 
 def stats_error(lane, current_rect, rects_arr, exception):
     ''' This function writes any errors with the stats to the log '''
@@ -76,6 +82,7 @@ def stats_error(lane, current_rect, rects_arr, exception):
     logging.error('  current_rect: %s', str(current_rect))
     logging.error('  rects_arr: %s', str(rects_arr))
     logging.error('  Exception: %s', str(exception))
+
 
 def lane_error(lane, contours, exception):
     ''' This function writes any errors with the lane to the log '''
