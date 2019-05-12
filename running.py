@@ -239,6 +239,11 @@ class imgProc (threading.Thread):
         global PASS_COUNTS, FAIL_COUNTS            # total counts
         global AVG_WIDTHS_TOTAL, AVG_HEIGHTS_TOTAL # average width/height
 
+        logo_x_offset = 560
+        logo_y_offset = 50
+        mcs_logo = cv2.imread('C:/Users/User/Roll-QC-V1/Control Panel.{21EC2020-3AEA-1069-A2DD-08002B30309D}/MCS Logo.jpg')
+        mcs_logo = cv2.resize(mcs_logo, (0,0), fx=1.25, fy=1.25)
+
         while not program_state.STOP_PROGRAM:
 
             _, FRAME = CAPTURE.read() # Take each FRAME
@@ -375,9 +380,11 @@ class imgProc (threading.Thread):
                 lane_3_traffic_colour = handle_config.YELLOW
             cv2.rectangle(CROPPED, (handle_config.TRAFFIC_LANE_3_X1, handle_config.TRAFFIC_Y1), (handle_config.TRAFFIC_LANE_3_X2, handle_config.TRAFFIC_Y2), lane_3_traffic_colour, -1)
 
-            # Show Low Cost Automation Banner
-            cv2.putText(CROPPED, 'EasiBake Roll Checker', (390, 60), handle_config.FONT, 2, handle_config.RED, 3)
-            cv2.putText(CROPPED, 'Low Cost Automation Ltd', (530, 100), handle_config.FONT, 1, handle_config.RED, 2)
+            # Show MCS Logo
+            CROPPED[
+                logo_y_offset : logo_y_offset + mcs_logo.shape[0],
+                logo_x_offset : logo_x_offset + mcs_logo.shape[1]
+            ] = mcs_logo
 
             # Show current AIO
             cv2.putText(CROPPED, 'OUTPUT: ' + str(OUTPUT), (350, 435), handle_config.FONT, 1, handle_config.RED, 2)

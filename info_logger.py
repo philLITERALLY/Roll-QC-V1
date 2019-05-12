@@ -21,16 +21,26 @@ def init():
     logging.info(' ')
     logging.info('Start: %s', str(datetime.datetime.now()))
 
+def decode_fourcc(v):
+  v = int(v)
+  return "".join([chr((v >> 8 * i) & 0xFF) for i in range(4)])
 
 def camera_settings(capture):
     ''' This function writes the camera settings to the log '''
     logging.debug(' ')
     logging.debug('Camera Settings: ')
     for camera_setting in range(len(variables.CAMERA_VARIABLES)):
-        logging.debug(
-            '\t' + str(variables.CAMERA_VARIABLES[camera_setting]) +
-            ' - ' + str(capture.get(camera_setting))
-        )
+        if variables.CAMERA_VARIABLES[camera_setting] == 'CAP_PROP_FOURCC':
+            logging.debug(
+                '\t' + str(variables.CAMERA_VARIABLES[camera_setting]) +
+                ' - ' + str(capture.get(camera_setting)) +
+                ' ' + str(decode_fourcc(capture.get(camera_setting)))
+            )
+        else:
+            logging.debug(
+                '\t' + str(variables.CAMERA_VARIABLES[camera_setting]) +
+                ' - ' + str(capture.get(camera_setting))
+            )
 
 def settings_access(keycard_value, username):
     ''' This function writes the settings_access information to the log '''
