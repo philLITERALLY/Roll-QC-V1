@@ -13,6 +13,19 @@ def resultsBtn(self):
         command=self.results_btn
     )
 
+def shutdownBtn(self, shutdown_win):
+    return Tkinter.Button(
+        shutdown_win,
+        text='SHUTDOWN',
+        font='Helvetica 17 bold',
+        width=10,
+        height=2,
+        bg='red',
+        activebackground='red',
+        foreground='white',
+        command=self.shutdown_btn
+    )
+
 def calibrateModeBtn(self, settings_win):
     return Tkinter.Button(
         settings_win,

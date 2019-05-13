@@ -51,12 +51,11 @@ def init():
     global TEXT_Y
 
     # Bounding Box Settings
-    global LANE_X1, LANE_Y1, LANE_X2, LANE_Y2, SPLIT_X1, SPLIT_X2
+    global LANE_X1, LANE_Y1, LANE_X2, LANE_Y2
+    global SPLIT_X1, SPLIT_X2, SPLIT_X3, SPLIT_X4
 
     # Traffic Lights Settings
-    global TRAFFIC_LANE_1_X1, TRAFFIC_LANE_1_X2
-    global TRAFFIC_LANE_2_X1, TRAFFIC_LANE_2_X2
-    global TRAFFIC_LANE_3_X1, TRAFFIC_LANE_3_X2
+    global TRAFFIC_X1, TRAFFIC_X2
     global TRAFFIC_Y1, TRAFFIC_Y2
 
     # AIO Settings
@@ -115,13 +114,15 @@ def init():
 
     # Get Lane Settings
     LANE_COUNT = config.getint('LANE', 'LANE_COUNT')
-    LANE_HEIGHT = config.getint('LANE', 'LANE_HEIGHT')
-    LANE_HEIGHT_END = config.getint('LANE', 'LANE_HEIGHT_END')
-    EDGE_GAP = config.getint('LANE', 'EDGE_GAP')
-    LANE_WIDTH_START = getArray(config, 'LANE', 'LANE_WIDTH_START')
-    LANE_WIDTH_END = getArray(config, 'LANE', 'LANE_WIDTH_END')
-    LANE_HEIGHT_START = getArray(config, 'LANE', 'LANE_HEIGHT_START')
-    LANE_HISTORY = config.getint('LANE', 'LANE_HISTORY')
+
+    LANE_CONFIG = str(LANE_COUNT) + ' LANE'
+    LANE_HEIGHT = config.getint(LANE_CONFIG, 'LANE_HEIGHT')
+    LANE_HEIGHT_END = config.getint(LANE_CONFIG, 'LANE_HEIGHT_END')
+    EDGE_GAP = config.getint(LANE_CONFIG, 'EDGE_GAP')
+    LANE_WIDTH_START = getArray(config, LANE_CONFIG, 'LANE_WIDTH_START')
+    LANE_WIDTH_END = getArray(config, LANE_CONFIG, 'LANE_WIDTH_END')
+    LANE_HEIGHT_START = getArray(config, LANE_CONFIG, 'LANE_HEIGHT_START')
+    LANE_HISTORY = config.getint(LANE_CONFIG, 'LANE_HISTORY')
 
     # Get Draw Settings
     FONT = config.getint('DRAW', 'FONT')
@@ -139,14 +140,17 @@ def init():
     LANE_Y2 = LANE_HEIGHT_END - EDGE_GAP
     SPLIT_X1 = LANE_WIDTH_START[1]
     SPLIT_X2 = LANE_WIDTH_END[1]
+    if LANE_COUNT == 4:
+        SPLIT_X3 = LANE_WIDTH_START[2]
+        SPLIT_X4 = LANE_WIDTH_END[2]
 
     # Setup Traffic Light Boxes
-    TRAFFIC_LANE_1_X1 = LANE_WIDTH_START[0]
-    TRAFFIC_LANE_1_X2 = LANE_WIDTH_END[0]
-    TRAFFIC_LANE_2_X1 = LANE_WIDTH_START[1]
-    TRAFFIC_LANE_2_X2 = LANE_WIDTH_END[1]
-    TRAFFIC_LANE_3_X1 = LANE_WIDTH_START[2]
-    TRAFFIC_LANE_3_X2 = LANE_WIDTH_END[2]
+    TRAFFIC_X1 = [LANE_WIDTH_START[0], LANE_WIDTH_START[1], LANE_WIDTH_START[2]]
+    TRAFFIC_X2 = [LANE_WIDTH_END[0], LANE_WIDTH_END[1], LANE_WIDTH_END[2]]
+    if LANE_COUNT == 4:
+        TRAFFIC_X1 = [LANE_WIDTH_START[0], LANE_WIDTH_START[1], LANE_WIDTH_START[2], LANE_WIDTH_START[3]]
+        TRAFFIC_X2 = [LANE_WIDTH_END[0], LANE_WIDTH_END[1], LANE_WIDTH_END[2], LANE_WIDTH_END[3]]
+
     TRAFFIC_Y1 = LANE_HEIGHT_END - EDGE_GAP
     TRAFFIC_Y2 = LANE_HEIGHT_END - EDGE_GAP + 30
 

@@ -93,6 +93,21 @@ class RunningWindow(threading.Thread):
 
             self.root.settings_win.max_thickness_text.set(handle_config.FAIL_HEIGHT_HIGH)
 
+    def shutdown_window(self):
+        # Create Settings Window
+        self.root.shutdown_win = Tkinter.Toplevel(self.root)
+
+        # Make shutdown Window remain on top until destroyed, or attribute changes.
+        self.root.shutdown_win.attributes('-topmost', True)
+        self.root.shutdown_win.overrideredirect(1)
+
+        # set the dimensions of the shutdown window and where it is placed
+        self.root.shutdown_win.geometry('%dx%d+%d+%d' % (150, 73, 20, 20))
+
+        # shutdown button
+        self.root.shutdown_win.shutdown = buttons.shutdownBtn(self, self.root.shutdown_win)
+        self.root.shutdown_win.shutdown.grid(row=0, column=0, padx=(0,0))
+
     def settings_window(self, admin):
         # If settings window not already open
         if self.root.settings_win == None or not Tkinter.Toplevel.winfo_exists(self.root.settings_win):
@@ -210,6 +225,9 @@ class RunningWindow(threading.Thread):
     def results_btn(self):
         os.system(R'C:/Users/User/Desktop/results.csv')
 
+    def shutdown_btn(self):
+        program_state.stop_program(True)
+
     def calibrate_btn(self):
         program_state.request_calibration(True)
 
@@ -251,6 +269,8 @@ class RunningWindow(threading.Thread):
         self.root.bind('<Return>', self.enter)
 
         self.root.deiconify()
+
+        self.shutdown_window()
 
         threading.Thread.__init__(self)
 

@@ -112,15 +112,26 @@ class aioThread (threading.Thread):
         LAST_OUTPUT = []
         while not program_state.STOP_PROGRAM:
             if program_state.RUN_MODE:
-                # Set AIO to running (high on 8) and any pulses
-                OUTPUT = [
-                    AIO_PASS_FAIL_PULSE[0][0], AIO_PASS_FAIL_PULSE[0][1], # Lane 1 Pass, Fail
-                    AIO_PASS_FAIL_PULSE[1][0], AIO_PASS_FAIL_PULSE[1][1], # Lane 2 Pass, Fail
-                    AIO_PASS_FAIL_PULSE[2][0], AIO_PASS_FAIL_PULSE[2][1], # Lane 3 Pass, Fail
-                    0, 0,
-                    1, # Running
-                    AIO_ACTIONS[0], AIO_ACTIONS[1], AIO_ACTIONS[2]
-                ]
+                if handle_config.LANE_COUNT == 4:
+                    # Set AIO to running (high on 8) and any pulses
+                    OUTPUT = [
+                        AIO_PASS_FAIL_PULSE[0][0], AIO_PASS_FAIL_PULSE[0][1], # Lane 1 Pass, Fail
+                        AIO_PASS_FAIL_PULSE[1][0], AIO_PASS_FAIL_PULSE[1][1], # Lane 2 Pass, Fail
+                        AIO_PASS_FAIL_PULSE[2][0], AIO_PASS_FAIL_PULSE[2][1], # Lane 3 Pass, Fail
+                        AIO_PASS_FAIL_PULSE[3][0], AIO_PASS_FAIL_PULSE[3][1], # Lane 4 Pass, Fail
+                        1, # Running
+                        AIO_ACTIONS[0], AIO_ACTIONS[1], AIO_ACTIONS[2]
+                    ]
+                else:
+                    # Set AIO to running (high on 8) and any pulses
+                    OUTPUT = [
+                        AIO_PASS_FAIL_PULSE[0][0], AIO_PASS_FAIL_PULSE[0][1], # Lane 1 Pass, Fail
+                        AIO_PASS_FAIL_PULSE[1][0], AIO_PASS_FAIL_PULSE[1][1], # Lane 2 Pass, Fail
+                        AIO_PASS_FAIL_PULSE[2][0], AIO_PASS_FAIL_PULSE[2][1], # Lane 3 Pass, Fail
+                        0, 0, # No Lane 4
+                        1, # Running
+                        AIO_ACTIONS[0], AIO_ACTIONS[1], AIO_ACTIONS[2]
+                    ]
             elif program_state.CALIBRATE_MODE:
                 # Set AIO to stop
                 OUTPUT = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -241,8 +252,12 @@ class imgProc (threading.Thread):
 
         logo_x_offset = 560
         logo_y_offset = 50
-        mcs_logo = cv2.imread('C:/Users/User/Roll-QC-V1/Control Panel.{21EC2020-3AEA-1069-A2DD-08002B30309D}/MCS Logo.jpg')
+        mcs_logo = cv2.imread('C:/Users/User/Roll-QC-V1/MCS Logo.jpg')
         mcs_logo = cv2.resize(mcs_logo, (0,0), fx=1.25, fy=1.25)
+
+        stats_font_size = 1
+        if handle_config.LANE_COUNT == 4:
+            stats_font_size = 0.8
 
         while not program_state.STOP_PROGRAM:
 
@@ -287,11 +302,11 @@ class imgProc (threading.Thread):
                         cv2.drawContours(CROPPED, [current_box], 0, handle_config.ORANGE, 2)
                     else:
                         cv2.drawContours(CROPPED, [current_box], 0, color, 2)
-                        cv2.putText(CROPPED, calc_dimensions, (start_pos, high_pos), handle_config.FONT, 1, color, 2)
+                        cv2.putText(CROPPED, calc_dimensions, (start_pos, high_pos), handle_config.FONT, stats_font_size, color, 2)
 
                     if program_state.CALIBRATE_MODE:
                         pixel_dimensions = '{0}px x {1}px'.format(int(w), int(h))
-                        cv2.putText(CROPPED, pixel_dimensions, (start_pos, low_pos), handle_config.FONT, 1, handle_config.RED, 2)
+                        cv2.putText(CROPPED, pixel_dimensions, (start_pos, low_pos), handle_config.FONT, stats_font_size, handle_config.RED, 2)
 
             if program_state.REQUEST_CALIBRATE:
                 for lane in range(handle_config.LANE_COUNT): # loop through lanes
@@ -336,49 +351,35 @@ class imgProc (threading.Thread):
                 AVG_HEIGHTS_TEXT = 'AVG THICKNESS: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * handle_config.HEIGHT_RATIOS[lane])) + 'mm'
                 if PASS_COUNTS[lane] > 0:
                     AVG_TEXT = '% PASSED: ' + str(100 * PASS_COUNTS[lane] / (PASS_COUNTS[lane] + FAIL_COUNTS[lane]))
-                cv2.putText(CROPPED, 'LANE ' + str(lane + 1), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y), handle_config.FONT, 1, handle_config.RED, 2)
-                cv2.putText(CROPPED, 'PASS: ' + str(PASS_COUNTS[lane]), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 30), handle_config.FONT, 1, handle_config.RED, 2)
-                cv2.putText(CROPPED, 'FAIL: ' + str(FAIL_COUNTS[lane]), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 60), handle_config.FONT, 1, handle_config.RED, 2)
-                cv2.putText(CROPPED, AVG_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 90), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.putText(CROPPED, 'LANE ' + str(lane + 1), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y), handle_config.FONT, stats_font_size, handle_config.RED, 2)
+                cv2.putText(CROPPED, 'PASS: ' + str(PASS_COUNTS[lane]), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 30), handle_config.FONT, stats_font_size, handle_config.RED, 2)
+                cv2.putText(CROPPED, 'FAIL: ' + str(FAIL_COUNTS[lane]), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 60), handle_config.FONT, stats_font_size, handle_config.RED, 2)
+                cv2.putText(CROPPED, AVG_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 90), handle_config.FONT, stats_font_size, handle_config.RED, 2)
                 if AVG_WIDTHS_TOTAL[lane][0] > 0:
-                    cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 120), handle_config.FONT, 1, handle_config.RED, 2)
+                    cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 120), handle_config.FONT, stats_font_size, handle_config.RED, 2)
                 if AVG_HEIGHTS_TOTAL[lane][0] > 0:
-                    cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 150), handle_config.FONT, 1, handle_config.RED, 2)
+                    cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 150), handle_config.FONT, stats_font_size, handle_config.RED, 2)
 
             # Show Lane Boundaries
             cv2.rectangle(CROPPED, (handle_config.LANE_X1, handle_config.LANE_Y1), (handle_config.LANE_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
             cv2.rectangle(CROPPED, (handle_config.SPLIT_X1, handle_config.LANE_Y1), (handle_config.SPLIT_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
+            if handle_config.LANE_COUNT == 4:
+                cv2.rectangle(CROPPED, (handle_config.SPLIT_X3, handle_config.LANE_Y1), (handle_config.SPLIT_X4, handle_config.LANE_Y2), handle_config.YELLOW, 2)
 
             # Lane Traffic Calculations
             red_fail = '111111'
             yellow_fail = '111'
 
-            # Lane 1 Traffic Light
-            lane_1_traffic_colour = handle_config.GREEN
-            lane_1_history = ''.join(str(e) for e in HISTORICAL_FAILS[0])
-            if red_fail in lane_1_history:
-                lane_1_traffic_colour = handle_config.RED
-            elif yellow_fail in lane_1_history:
-                lane_1_traffic_colour = handle_config.YELLOW
-            cv2.rectangle(CROPPED, (handle_config.TRAFFIC_LANE_1_X1, handle_config.TRAFFIC_Y1), (handle_config.TRAFFIC_LANE_1_X2, handle_config.TRAFFIC_Y2), lane_1_traffic_colour, -1)
+            for lane in range(handle_config.LANE_COUNT): # loop through lanes
+                traffic_colour = handle_config.GREEN
+                history = ''.join(str(e) for e in HISTORICAL_FAILS[lane])
 
-            # Lane 2 Traffic Light
-            lane_2_traffic_colour = handle_config.GREEN
-            lane_2_history = ''.join(str(e) for e in HISTORICAL_FAILS[1])
-            if red_fail in lane_2_history:
-                lane_2_traffic_colour = handle_config.RED
-            elif yellow_fail in lane_2_history:
-                lane_2_traffic_colour = handle_config.YELLOW
-            cv2.rectangle(CROPPED, (handle_config.TRAFFIC_LANE_2_X1, handle_config.TRAFFIC_Y1), (handle_config.TRAFFIC_LANE_2_X2, handle_config.TRAFFIC_Y2), lane_2_traffic_colour, -1)
+                if red_fail in history:
+                    traffic_colour = handle_config.RED
+                elif yellow_fail in history:
+                    traffic_colour = handle_config.YELLOW
 
-            # Lane 3 Traffic Light
-            lane_3_traffic_colour = handle_config.GREEN
-            lane_3_history = ''.join(str(e) for e in HISTORICAL_FAILS[2])
-            if red_fail in lane_3_history:
-                lane_3_traffic_colour = handle_config.RED
-            elif yellow_fail in lane_3_history:
-                lane_3_traffic_colour = handle_config.YELLOW
-            cv2.rectangle(CROPPED, (handle_config.TRAFFIC_LANE_3_X1, handle_config.TRAFFIC_Y1), (handle_config.TRAFFIC_LANE_3_X2, handle_config.TRAFFIC_Y2), lane_3_traffic_colour, -1)
+                cv2.rectangle(CROPPED, (handle_config.TRAFFIC_X1[lane], handle_config.TRAFFIC_Y1), (handle_config.TRAFFIC_X2[lane], handle_config.TRAFFIC_Y2), traffic_colour, -1)
 
             # Show MCS Logo
             CROPPED[
@@ -483,7 +484,7 @@ class resultsExportThread (threading.Thread):
                         FAIL_COUNTS[lane] = 0
 
                     result_location = 'C:/Users/User/Desktop/results.csv'
-                    template_location = 'C:/Users/User/Roll-QC-V1/Control Panel.{21EC2020-3AEA-1069-A2DD-08002B30309D}/results_template.csv'
+                    template_location = 'C:/Users/User/Roll-QC-V1/results_template.csv'
                     destination = handle_config.FOLDER_LOCATION + time.strftime('%Y-%m-%d_%p') + '.csv'
                     copyfile(result_location, destination)
                     copyfile(template_location, result_location)
