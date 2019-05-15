@@ -2,6 +2,7 @@
 
 # External Libraries
 import cv2      # OpenCV
+import time     # time
 
 # My Modules
 import handle_config
@@ -13,6 +14,7 @@ def main():
     capture.set(3, handle_config.CAM_WIDTH)
     capture.set(4, handle_config.CAM_HEIGHT)
     capture.set(5, handle_config.CAM_FPS)
+    time.sleep(5)
     capture.set(15, handle_config.CAM_EXPOSURE)
 
     info_logger.camera_settings(capture)
