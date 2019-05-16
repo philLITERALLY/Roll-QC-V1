@@ -252,7 +252,7 @@ class imgProc (threading.Thread):
 
         logo_x_offset = 560
         logo_y_offset = 50
-        mcs_logo = cv2.imread('C:/Users/User/Roll-QC-V1/MCS Logo.jpg')
+        mcs_logo = cv2.imread(handle_config.LOGO_LOCATION)
         mcs_logo = cv2.resize(mcs_logo, (0,0), fx=1.25, fy=1.25)
 
         stats_font_size = 1
@@ -345,12 +345,16 @@ class imgProc (threading.Thread):
 
             # Not Thresh Mode
             not_thresh_statement = (lane for lane in range(handle_config.LANE_COUNT) if not program_state.THRESH_MODE and not program_state.CALIBRATE_MODE)
+            all_lanes_pass = 0
+            all_lanes_fail = 0
             for lane in not_thresh_statement:
                 AVG_TEXT = '% PASSED: 0'
                 AVG_WIDTHS_TEXT = 'AVG LENGTH: ' + str(int(AVG_WIDTHS_TOTAL[lane][0] * handle_config.WIDTH_RATIOS[lane])) + 'mm'
                 AVG_HEIGHTS_TEXT = 'AVG THICKNESS: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * handle_config.HEIGHT_RATIOS[lane])) + 'mm'
                 if PASS_COUNTS[lane] > 0:
                     AVG_TEXT = '% PASSED: ' + str(100 * PASS_COUNTS[lane] / (PASS_COUNTS[lane] + FAIL_COUNTS[lane]))
+                    all_lanes_pass += PASS_COUNTS[lane]
+                    all_lanes_fail += FAIL_COUNTS[lane]
                 cv2.putText(CROPPED, 'LANE ' + str(lane + 1), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y), handle_config.FONT, stats_font_size, handle_config.RED, 2)
                 cv2.putText(CROPPED, 'PASS: ' + str(PASS_COUNTS[lane]), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 30), handle_config.FONT, stats_font_size, handle_config.RED, 2)
                 cv2.putText(CROPPED, 'FAIL: ' + str(FAIL_COUNTS[lane]), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 60), handle_config.FONT, stats_font_size, handle_config.RED, 2)
@@ -359,6 +363,10 @@ class imgProc (threading.Thread):
                     cv2.putText(CROPPED, AVG_WIDTHS_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 120), handle_config.FONT, stats_font_size, handle_config.RED, 2)
                 if AVG_HEIGHTS_TOTAL[lane][0] > 0:
                     cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 150), handle_config.FONT, stats_font_size, handle_config.RED, 2)
+
+            if all_lanes_pass > 0:
+                ALL_AVG_TEXT = 'SHIFT TOTAL % PASSED: ' + str(100 * all_lanes_pass / (all_lanes_pass + all_lanes_fail))
+                cv2.putText(CROPPED, ALL_AVG_TEXT, (550, 750), handle_config.FONT, stats_font_size, handle_config.RED, 2)
 
             # Show Lane Boundaries
             cv2.rectangle(CROPPED, (handle_config.LANE_X1, handle_config.LANE_Y1), (handle_config.LANE_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
@@ -483,8 +491,8 @@ class resultsExportThread (threading.Thread):
                         PASS_COUNTS[lane] = 0
                         FAIL_COUNTS[lane] = 0
 
-                    result_location = 'C:/Users/User/Desktop/results.csv'
-                    template_location = 'C:/Users/User/Roll-QC-V1/results_template.csv'
+                    result_location = handle_config.CURRENT_RESULTS
+                    template_location = handle_config.TEMPLATE_FILE
                     destination = handle_config.FOLDER_LOCATION + time.strftime('%Y-%m-%d_%p') + '.csv'
                     copyfile(result_location, destination)
                     copyfile(template_location, result_location)

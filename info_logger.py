@@ -14,7 +14,6 @@ my_path = os.path.abspath(os.path.dirname(__file__))
 
 logging.basicConfig(filename='logging_' + datetime.datetime.now().strftime('%d-%m-%Y') + '.log', level=logging.DEBUG)
 
-
 def init():
     ''' This function creates a new log with current date time '''
     logging.info('------')
@@ -62,7 +61,7 @@ def result(lane, width, height):
     row.append(str(int(height * handle_config.HEIGHT_RATIOS[lane])))
     row.append(str(int(width * height)))
 
-    with open(R'C:/Users/User/Desktop/results.csv', 'ab') as csvFile:
+    with open(R'%s' % handle_config.CURRENT_RESULTS, 'ab') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerow(row)
 

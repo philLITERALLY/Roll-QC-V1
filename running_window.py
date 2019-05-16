@@ -221,7 +221,7 @@ class RunningWindow(threading.Thread):
         self.root.settings_win.destroy()
 
     def results_btn(self):
-        os.system(R'C:/Users/User/Desktop/results.csv')
+        os.system(R'%s' % handle_config.CURRENT_RESULTS)
 
     def shutdown_btn(self):
         program_state.stop_program(True)

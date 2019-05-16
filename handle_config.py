@@ -62,7 +62,10 @@ def init():
     global AIO_WAIT
 
     # Results Settings
-    global EXPORT_TIMES, FOLDER_LOCATION
+    global EXPORT_TIMES, FOLDER_LOCATION, TEMPLATE_FILE, CURRENT_RESULTS
+
+    # General Settings
+    global LOGO_LOCATION
 
     # Load config file
     config = ConfigParser()
@@ -160,6 +163,11 @@ def init():
     # Get Results Settings
     EXPORT_TIMES = getArray(config, 'RESULTS', 'EXPORT_TIMES')
     FOLDER_LOCATION = config.get('RESULTS', 'FOLDER_LOCATION')
+    TEMPLATE_FILE = config.get('RESULTS', 'TEMPLATE_FILE')
+    CURRENT_RESULTS = config.get('RESULTS', 'CURRENT_RESULTS')
+
+    # Get General Settings
+    LOGO_LOCATION = config.get('GENERAL', 'LOGO_LOCATION')
 
     # Get Crop Settings
     CAM_WIDTH_MIDPOINT = CAM_WIDTH / 2
