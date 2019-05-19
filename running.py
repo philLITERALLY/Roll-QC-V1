@@ -1,6 +1,6 @@
 '''This program performs Quality Control on Sub Rolls'''
 
-#
+# check computer ID against const
 import subprocess
 current_machine_id = subprocess.check_output('wmic csproduct get uuid').decode().split('\n')[1].strip()
 if current_machine_id != '03000200-0400-0500-0006-000700080009':
@@ -345,16 +345,12 @@ class imgProc (threading.Thread):
 
             # Not Thresh Mode
             not_thresh_statement = (lane for lane in range(handle_config.LANE_COUNT) if not program_state.THRESH_MODE and not program_state.CALIBRATE_MODE)
-            all_lanes_pass = 0
-            all_lanes_fail = 0
             for lane in not_thresh_statement:
                 AVG_TEXT = '% PASSED: 0'
                 AVG_WIDTHS_TEXT = 'AVG LENGTH: ' + str(int(AVG_WIDTHS_TOTAL[lane][0] * handle_config.WIDTH_RATIOS[lane])) + 'mm'
                 AVG_HEIGHTS_TEXT = 'AVG THICKNESS: ' + str(int(AVG_HEIGHTS_TOTAL[lane][0] * handle_config.HEIGHT_RATIOS[lane])) + 'mm'
                 if PASS_COUNTS[lane] > 0:
                     AVG_TEXT = '% PASSED: ' + str(100 * PASS_COUNTS[lane] / (PASS_COUNTS[lane] + FAIL_COUNTS[lane]))
-                    all_lanes_pass += PASS_COUNTS[lane]
-                    all_lanes_fail += FAIL_COUNTS[lane]
                 cv2.putText(CROPPED, 'LANE ' + str(lane + 1), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y), handle_config.FONT, stats_font_size, handle_config.RED, 2)
                 cv2.putText(CROPPED, 'PASS: ' + str(PASS_COUNTS[lane]), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 30), handle_config.FONT, stats_font_size, handle_config.RED, 2)
                 cv2.putText(CROPPED, 'FAIL: ' + str(FAIL_COUNTS[lane]), (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 60), handle_config.FONT, stats_font_size, handle_config.RED, 2)
@@ -364,7 +360,9 @@ class imgProc (threading.Thread):
                 if AVG_HEIGHTS_TOTAL[lane][0] > 0:
                     cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 150), handle_config.FONT, stats_font_size, handle_config.RED, 2)
 
-            if all_lanes_pass > 0:
+            all_lanes_pass = sum(PASS_COUNTS)
+            all_lanes_fail = sum(FAIL_COUNTS)
+            if all_lanes_pass + all_lanes_fail > 0:
                 fail_perc = 100.0 * all_lanes_fail / (all_lanes_pass + all_lanes_fail)
                 running_total_txt = 'RUNNING TOTAL:- '
                 running_total_txt += 'PASSED = ' + str(all_lanes_pass)
@@ -447,7 +445,7 @@ class laneThread (threading.Thread):
             THRESH_LANE_IMG = THRESHOLD_IMG[handle_config.LANE_HEIGHT_START:handle_config.LANE_HEIGHT_END, handle_config.LANE_WIDTH_START[lane]:handle_config.LANE_WIDTH_END[lane]]
 
             # run opencv find contours, only external boxes
-            _, CONTOURS, _ = cv2.findContours(THRESH_LANE_IMG, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            CONTOURS, _ = cv2.findContours(THRESH_LANE_IMG, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             if CONTOURS:
                 try:
                     contour = max(CONTOURS, key=cv2.contourArea) # find the biggest area
