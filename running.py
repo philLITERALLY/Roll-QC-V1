@@ -365,8 +365,20 @@ class imgProc (threading.Thread):
                     cv2.putText(CROPPED, AVG_HEIGHTS_TEXT, (handle_config.LANE_WIDTH_START[lane], handle_config.TEXT_Y + 150), handle_config.FONT, stats_font_size, handle_config.RED, 2)
 
             if all_lanes_pass > 0:
-                ALL_AVG_TEXT = 'SHIFT TOTAL % PASSED: ' + str(100 * all_lanes_pass / (all_lanes_pass + all_lanes_fail))
-                cv2.putText(CROPPED, ALL_AVG_TEXT, (550, 750), handle_config.FONT, stats_font_size, handle_config.RED, 2)
+                fail_perc = 100.0 * all_lanes_fail / (all_lanes_pass + all_lanes_fail)
+                running_total_txt = 'RUNNING TOTAL:- '
+                running_total_txt += 'PASSED = ' + str(all_lanes_pass)
+                running_total_txt += ' FAILED = ' + str(all_lanes_fail)
+                running_total_txt += '    % FAILED = {:.1f}%'.format(fail_perc)
+
+                # get boundary of this text
+                textsize = cv2.getTextSize(running_total_txt, handle_config.FONT, 1, 2)[0]
+                # get coords based on boundary
+                textX = (CROPPED.shape[1] - textsize[0]) / 2
+
+                cv2.putText(CROPPED, running_total_txt, (textX, 825), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.line(CROPPED, (0, 790), (2000, 790), handle_config.RED, 2)
+                cv2.line(CROPPED, (0, 840), (2000, 840), handle_config.RED, 2)
 
             # Show Lane Boundaries
             cv2.rectangle(CROPPED, (handle_config.LANE_X1, handle_config.LANE_Y1), (handle_config.LANE_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
