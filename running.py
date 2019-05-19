@@ -374,9 +374,13 @@ class imgProc (threading.Thread):
                 # get coords based on boundary
                 textX = (CROPPED.shape[1] - textsize[0]) / 2
 
-                cv2.putText(CROPPED, running_total_txt, (textX, 825), handle_config.FONT, 1, handle_config.RED, 2)
-                cv2.line(CROPPED, (0, 790), (2000, 790), handle_config.RED, 2)
-                cv2.line(CROPPED, (0, 840), (2000, 840), handle_config.RED, 2)
+                textPos = 825
+                if handle_config.LANE_COUNT == 3:
+                    textPos = 880
+
+                cv2.putText(CROPPED, running_total_txt, (textX, textPos), handle_config.FONT, 1, handle_config.RED, 2)
+                cv2.line(CROPPED, (0, textPos - 35), (2000, textPos - 35), handle_config.RED, 2)
+                cv2.line(CROPPED, (0, textPos + 15), (2000, textPos + 15), handle_config.RED, 2)
 
             # Show Lane Boundaries
             cv2.rectangle(CROPPED, (handle_config.LANE_X1, handle_config.LANE_Y1), (handle_config.LANE_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
