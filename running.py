@@ -120,7 +120,7 @@ class aioThread (threading.Thread):
                         AIO_PASS_FAIL_PULSE[2][0], AIO_PASS_FAIL_PULSE[2][1], # Lane 3 Pass, Fail
                         AIO_PASS_FAIL_PULSE[3][0], AIO_PASS_FAIL_PULSE[3][1], # Lane 4 Pass, Fail
                         1, # Running
-                        AIO_ACTIONS[0], AIO_ACTIONS[1], AIO_ACTIONS[2]
+                        0, 0, 0
                     ]
                 else:
                     # Set AIO to running (high on 8) and any pulses
@@ -409,8 +409,13 @@ class imgProc (threading.Thread):
                 logo_x_offset : logo_x_offset + mcs_logo.shape[1]
             ] = mcs_logo
 
+            outputTxt = 'OUTPUT: ' + str(OUTPUT)
+            # get boundary of this text
+            textsize = cv2.getTextSize(outputTxt, handle_config.FONT, 1, 2)[0]
+            # get coords based on boundary
+            textX = (CROPPED.shape[1] - textsize[0]) / 2
             # Show current AIO
-            cv2.putText(CROPPED, 'OUTPUT: ' + str(OUTPUT), (350, 435), handle_config.FONT, 1, handle_config.RED, 2)
+            cv2.putText(CROPPED, outputTxt, (textX, 435), handle_config.FONT, 1, handle_config.RED, 2)
 
             # Show min/max values
             max_length = 'MAX LENGTH = ' + str(int(handle_config.FAIL_WIDTH_HIGH)) + 'mm   '
