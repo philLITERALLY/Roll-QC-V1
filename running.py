@@ -417,15 +417,18 @@ class imgProc (threading.Thread):
             # Show current AIO
             cv2.putText(CROPPED, outputTxt, (textX, 435), handle_config.FONT, 1, handle_config.RED, 2)
 
+            reject_y_offset = 290
+            reject_x_offset = 700
+
             # Show min/max values
             max_length = 'MAX LENGTH = ' + str(int(handle_config.FAIL_WIDTH_HIGH)) + 'mm   '
             min_length = 'MIN LENGTH = ' + str(int(handle_config.FAIL_WIDTH_LOW)) + 'mm    '
             max_thickness = 'MAX THICKNESS = ' + str(int(handle_config.FAIL_HEIGHT_HIGH)) + 'mm'
             min_thickness = 'MIN THICKNESS = ' + str(int(handle_config.FAIL_HEIGHT_LOW)) + 'mm'
-            cv2.putText(CROPPED, 'CURRENT REJECT SETTINGS', (240, 950), handle_config.FONT, 1, handle_config.RED, 2)
-            cv2.line(CROPPED, (50, 965), (875, 965), handle_config.RED, 2)
-            cv2.putText(CROPPED, max_length + max_thickness, (50, 1000), handle_config.FONT, 1, handle_config.RED, 2)
-            cv2.putText(CROPPED, min_length + min_thickness, (50, 1050), handle_config.FONT, 1, handle_config.RED, 2)
+            cv2.putText(CROPPED, 'CURRENT REJECT SETTINGS', (240 + reject_y_offset, 950 - reject_x_offset), handle_config.FONT, 1, handle_config.RED, 2)
+            cv2.line(CROPPED, (50 + reject_y_offset, 965 - reject_x_offset), (875 + reject_y_offset, 965 - reject_x_offset), handle_config.RED, 2)
+            cv2.putText(CROPPED, max_length + max_thickness, (50 + reject_y_offset, 1000 - reject_x_offset), handle_config.FONT, 1, handle_config.RED, 2)
+            cv2.putText(CROPPED, min_length + min_thickness, (50 + reject_y_offset, 1050 - reject_x_offset), handle_config.FONT, 1, handle_config.RED, 2)
 
             window_name = 'LINE VIEW'
             if DISPLAY_IMG != []:
