@@ -2,6 +2,7 @@
 
 global RUN_MODE, STOP_PROGRAM, ADMIN_USER
 global CALIBRATE_MODE, THRESH_MODE, REQUEST_CALIBRATE
+global CLEAR_RESULTS
 
 RUN_MODE = True
 STOP_PROGRAM = False
@@ -9,6 +10,7 @@ ADMIN_USER = False
 CALIBRATE_MODE = False
 THRESH_MODE = False
 REQUEST_CALIBRATE = False
+CLEAR_RESULTS = False
 
 def set_admin_user(value):
     global ADMIN_USER
@@ -33,3 +35,11 @@ def set_run_mode(value):
 def stop_program(value):
     global STOP_PROGRAM
     STOP_PROGRAM = True
+
+def clear_results():
+    global CLEAR_RESULTS
+    CLEAR_RESULTS = True
+
+def results_cleared():
+    global CLEAR_RESULTS
+    CLEAR_RESULTS = False

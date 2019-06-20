@@ -66,6 +66,7 @@ def init():
 
     # General Settings
     global LOGO_LOCATION
+    global CLEAR_RESULT_BTN # Mode with clear result button
 
     # Load config file
     config = ConfigParser()
@@ -168,6 +169,7 @@ def init():
 
     # Get General Settings
     LOGO_LOCATION = config.get('GENERAL', 'LOGO_LOCATION')
+    CLEAR_RESULT_BTN = config.get('GENERAL', 'CLEAR_RESULT_BTN')
 
     # Get Crop Settings
     CAM_WIDTH_MIDPOINT = CAM_WIDTH / 2

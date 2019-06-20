@@ -92,7 +92,7 @@ class RunningWindow(threading.Thread):
             self.root.settings_win.max_thickness_text.set(handle_config.FAIL_HEIGHT_HIGH)
 
     def shutdown_window(self):
-        # Create Settings Window
+        # Create shutdown Window
         self.root.shutdown_win = Tkinter.Toplevel(self.root)
 
         # Make shutdown Window remain on top until destroyed, or attribute changes.
@@ -105,6 +105,28 @@ class RunningWindow(threading.Thread):
         # shutdown button
         self.root.shutdown_win.shutdown = buttons.shutdownBtn(self, self.root.shutdown_win)
         self.root.shutdown_win.shutdown.grid(row=0, column=0, padx=(0,0))
+
+    def clear_result_window(self):
+        # Create clear result Window
+        self.root.clear_result_window = Tkinter.Toplevel(self.root)
+
+        # Make clear result Window remain on top until destroyed, or attribute changes.
+        self.root.clear_result_window.attributes('-topmost', True)
+        self.root.clear_result_window.overrideredirect(1)
+
+        hs = self.root.winfo_screenheight() - 20 # height of the screen
+        w = 200
+        h = 74 # height for the clear result window
+
+        x = 20
+        y = hs - h # calculate x coordinate for the clear result window
+
+        # set the dimensions of the clear result window and where it is placed
+        self.root.clear_result_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
+
+        # clear result button
+        self.root.clear_result_window.clear_result = buttons.clearResultBtn(self, self.root.clear_result_window)
+        self.root.clear_result_window.clear_result.grid(row=0, column=0, padx=(0,0))
 
     def settings_window(self, admin):
         # If settings window not already open
@@ -226,6 +248,9 @@ class RunningWindow(threading.Thread):
     def shutdown_btn(self):
         program_state.stop_program(True)
 
+    def clear_result_btn(self):
+        program_state.clear_results()
+
     def calibrate_btn(self):
         program_state.request_calibration(True)
 
@@ -269,6 +294,7 @@ class RunningWindow(threading.Thread):
         self.root.deiconify()
 
         self.shutdown_window()
+        self.clear_result_window()
 
         threading.Thread.__init__(self)
 
