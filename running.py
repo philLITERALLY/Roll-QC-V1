@@ -382,11 +382,15 @@ class imgProc (threading.Thread):
                 cv2.line(CROPPED, (0, textPos - 35), (2000, textPos - 35), handle_config.YELLOW, 2)
                 cv2.line(CROPPED, (0, textPos + 15), (2000, textPos + 15), handle_config.YELLOW, 2)
 
+            # show reject line
+            exiting_box = handle_config.LANE_HEIGHT_START + handle_config.LANE_HEIGHT - handle_config.EDGE_GAP
+            cv2.rectangle(CROPPED, (handle_config.LANE_X1, exiting_box), (handle_config.LANE_X2, handle_config.LANE_HEIGHT_END), handle_config.RED, 2)
+            
             # Show Lane Boundaries
-            cv2.rectangle(CROPPED, (handle_config.LANE_X1, handle_config.LANE_Y1), (handle_config.LANE_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
-            cv2.rectangle(CROPPED, (handle_config.SPLIT_X1, handle_config.LANE_Y1), (handle_config.SPLIT_X2, handle_config.LANE_Y2), handle_config.YELLOW, 2)
+            cv2.rectangle(CROPPED, (handle_config.LANE_X1, handle_config.LANE_HEIGHT_START), (handle_config.LANE_X2, handle_config.LANE_HEIGHT_END), handle_config.YELLOW, 2)
+            cv2.rectangle(CROPPED, (handle_config.SPLIT_X1, handle_config.LANE_HEIGHT_START), (handle_config.SPLIT_X2, handle_config.LANE_HEIGHT_END), handle_config.YELLOW, 2)
             if handle_config.LANE_COUNT == 4:
-                cv2.rectangle(CROPPED, (handle_config.SPLIT_X3, handle_config.LANE_Y1), (handle_config.SPLIT_X4, handle_config.LANE_Y2), handle_config.YELLOW, 2)
+                cv2.rectangle(CROPPED, (handle_config.SPLIT_X3, handle_config.LANE_HEIGHT_START), (handle_config.SPLIT_X4, handle_config.LANE_HEIGHT_END), handle_config.YELLOW, 2)
 
             # Lane Traffic Calculations
             red_fail = '111111'

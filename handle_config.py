@@ -51,7 +51,7 @@ def init():
     global TEXT_Y
 
     # Bounding Box Settings
-    global LANE_X1, LANE_Y1, LANE_X2, LANE_Y2
+    global LANE_X1, LANE_X2
     global SPLIT_X1, SPLIT_X2, SPLIT_X3, SPLIT_X4
 
     # Traffic Lights Settings
@@ -139,9 +139,7 @@ def init():
 
     # Get Bounding Box Settings
     LANE_X1 = LANE_WIDTH_START[0]
-    LANE_Y1 = LANE_HEIGHT_START + EDGE_GAP
     LANE_X2 = LANE_WIDTH_END[LANE_COUNT - 1]
-    LANE_Y2 = LANE_HEIGHT_END - EDGE_GAP
     SPLIT_X1 = LANE_WIDTH_START[1]
     SPLIT_X2 = LANE_WIDTH_END[1]
     if LANE_COUNT == 4:
@@ -155,8 +153,8 @@ def init():
         TRAFFIC_X1 = [LANE_WIDTH_START[0], LANE_WIDTH_START[1], LANE_WIDTH_START[2], LANE_WIDTH_START[3]]
         TRAFFIC_X2 = [LANE_WIDTH_END[0], LANE_WIDTH_END[1], LANE_WIDTH_END[2], LANE_WIDTH_END[3]]
 
-    TRAFFIC_Y1 = LANE_HEIGHT_END - EDGE_GAP
-    TRAFFIC_Y2 = LANE_HEIGHT_END - EDGE_GAP + 30
+    TRAFFIC_Y1 = LANE_HEIGHT_END
+    TRAFFIC_Y2 = LANE_HEIGHT_END + 30
 
     # Get AIO Settings
     AIO_WAIT = config.getfloat('AIO', 'AIO_WAIT')
