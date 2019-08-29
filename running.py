@@ -225,10 +225,10 @@ class statsThread (threading.Thread):
 
                         try:
                             if current_rect[1][0] > current_rect[1][1]:
-                                w = current_rect[1][0]
+                                w = current_rect[1][0] * handle_config.WIDTH_MULTIPLE[lane]
                                 h = current_rect[1][1]
                             else:
-                                w = current_rect[1][1]
+                                w = current_rect[1][1] * handle_config.WIDTH_MULTIPLE[lane]
                                 h = current_rect[1][0]
 
                             # Calculate AVG width and height
@@ -278,10 +278,10 @@ class imgProc (threading.Thread):
                     current_box = BOX_ARR[lane]
 
                     if current_rect[1][0] > current_rect[1][1]:
-                        w = current_rect[1][0]
+                        w = current_rect[1][0] * handle_config.WIDTH_MULTIPLE[lane]
                         h = current_rect[1][1]
                     else:
-                        w = current_rect[1][1]
+                        w = current_rect[1][1] * handle_config.WIDTH_MULTIPLE[lane]
                         h = current_rect[1][0]
 
                     calc_dimensions = variables.dimension_calc(lane, w, h)
@@ -374,9 +374,9 @@ class imgProc (threading.Thread):
                 # get coords based on boundary
                 textX = (CROPPED.shape[1] - textsize[0]) / 2
 
-                textPos = 825
+                textPos = 835
                 if handle_config.LANE_COUNT == 3:
-                    textPos = 880
+                    textPos = 890
 
                 cv2.putText(CROPPED, running_total_txt, (textX, textPos), handle_config.FONT, 1, handle_config.YELLOW, 2)
                 cv2.line(CROPPED, (0, textPos - 35), (2000, textPos - 35), handle_config.YELLOW, 2)

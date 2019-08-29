@@ -27,6 +27,7 @@ def init():
     global WIDTH_RATIOS, HEIGHT_RATIOS
     global PIXEL_WIDTHS, PIXEL_HEIGHTS
     global ACTUAL_WIDTH, ACTUAL_HEIGHT
+    global WIDTH_MULTIPLE
 
     # Thresh
     global MIN_AREA, WHITE_THRESH
@@ -85,6 +86,7 @@ def init():
     ACTUAL_HEIGHT = config.getfloat('CALIBRATION', 'ACTUAL_HEIGHT')
     PIXEL_WIDTHS = getArray(config, 'CALIBRATION', 'PIXEL_WIDTHS')
     PIXEL_HEIGHTS = getArray(config, 'CALIBRATION', 'PIXEL_HEIGHTS')
+    WIDTH_MULTIPLE = getArray(config, 'CALIBRATION', 'WIDTH_MULTIPLE')
 
     HEIGHT_RATIOS, WIDTH_RATIOS = [], []
     for width in PIXEL_WIDTHS:
@@ -135,7 +137,7 @@ def init():
     ORANGE = getArray(config, 'DRAW', 'ORANGE')
     YELLOW = getArray(config, 'DRAW', 'YELLOW')
     PASS_FAIL_Y = getArray(config, 'DRAW', 'PASS_FAIL_Y')
-    TEXT_Y = LANE_HEIGHT_END - EDGE_GAP + 60
+    TEXT_Y = LANE_HEIGHT_END + 55
 
     # Get Bounding Box Settings
     LANE_X1 = LANE_WIDTH_START[0]
