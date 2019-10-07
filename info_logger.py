@@ -56,7 +56,6 @@ def settings_access_error(keycard_value):
 def result(lane, width, height):
     ''' This adds a row result to CSV file '''
     row = [str(datetime.datetime.now().strftime('%Y:%m:%d:%H:%M:%S'))]
-    row.append(str(lane + 1))
     row.append(str(int(width * handle_config.WIDTH_RATIOS[lane])))
     row.append(str(int(height * handle_config.HEIGHT_RATIOS[lane])))
     row.append(str(int(width * height)))
