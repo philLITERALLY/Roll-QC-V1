@@ -165,7 +165,10 @@ def init():
     EXPORT_TIMES = getArray(config, 'RESULTS', 'EXPORT_TIMES')
     FOLDER_LOCATION = config.get('RESULTS', 'FOLDER_LOCATION')
     TEMPLATE_FILE = config.get('RESULTS', 'TEMPLATE_FILE')
-    CURRENT_RESULTS = config.get('RESULTS', 'CURRENT_RESULTS')
+    RESULTS_FILE = config.get('RESULTS', 'CURRENT_RESULTS')
+    CURRENT_RESULTS = []
+    for index in range(LANE_COUNT):
+        CURRENT_RESULTS.append(RESULTS_FILE + str(index + 1) + '.csv')
 
     # Get General Settings
     LOGO_LOCATION = config.get('GENERAL', 'LOGO_LOCATION')

@@ -529,11 +529,12 @@ class resultsExportThread (threading.Thread):
                         PASS_COUNTS[lane] = 0
                         FAIL_COUNTS[lane] = 0
 
-                    result_location = handle_config.CURRENT_RESULTS
-                    template_location = handle_config.TEMPLATE_FILE
-                    destination = handle_config.FOLDER_LOCATION + time.strftime('%Y-%m-%d_%p') + '.csv'
-                    copyfile(result_location, destination)
-                    copyfile(template_location, result_location)
+                        result_location = handle_config.CURRENT_RESULTS[lane]
+                        template_location = handle_config.TEMPLATE_FILE
+                        destination = handle_config.FOLDER_LOCATION + 'LANE' + str(lane + 1) + time.strftime('_%Y-%m-%d_%p') + '.csv'
+                        copyfile(result_location, destination)
+                        copyfile(template_location, result_location)
+
                     exporting = True
             else:
                 exporting = False

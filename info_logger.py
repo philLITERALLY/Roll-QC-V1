@@ -61,7 +61,7 @@ def result(lane, width, height):
     row.append(str(int(height * handle_config.HEIGHT_RATIOS[lane])))
     row.append(str(int(width * height)))
 
-    with open(R'%s' % handle_config.CURRENT_RESULTS, 'ab') as csvFile:
+    with open(R'%s' % handle_config.CURRENT_RESULTS[lane], 'ab') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerow(row)
 

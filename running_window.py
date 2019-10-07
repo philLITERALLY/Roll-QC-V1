@@ -243,7 +243,8 @@ class RunningWindow(threading.Thread):
         self.root.settings_win.destroy()
 
     def results_btn(self):
-        os.system(R'%s' % handle_config.CURRENT_RESULTS)
+        for index in range(handle_config.LANE_COUNT):
+            os.system(R'%s' % handle_config.CURRENT_RESULTS[index])
 
     def shutdown_btn(self):
         program_state.stop_program(True)
