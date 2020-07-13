@@ -5,6 +5,7 @@ import threading
 import Tkinter
 import os
 import cv2
+import time
 
 # Main Variables
 import program_state
@@ -231,6 +232,8 @@ class RunningWindow(threading.Thread):
 
                 self.root.settings_win.calibrateModeBtn = buttons.calibrateModeBtn(self, self.root.settings_win)
                 self.root.settings_win.calibrateModeBtn.grid(row=0, rowspan=6, column=12, columnspan=2, padx=(20,0), pady=(5,5), sticky='w,e,n,s')
+                self.root.settings_win.calibrateModeBtn.bind("<ButtonPress>", self.calibrate_hold)
+                self.root.settings_win.calibrateModeBtn.bind("<ButtonRelease>", self.calibrate_release)
 
                 self.root.settings_win.threshModeBtn = buttons.threshModeBtn(self, self.root.settings_win)
                 self.root.settings_win.threshModeBtn.grid(row=0, rowspan=6, column=14, columnspan=2, padx=(20,0), pady=(5,5), sticky='w,e,n,s')
@@ -252,8 +255,14 @@ class RunningWindow(threading.Thread):
     def clear_result_btn(self):
         program_state.clear_results()
 
-    def calibrate_btn(self):
-        program_state.request_calibration(True)
+    def calibrate_hold(self, event):
+        # grab time when button is pressed
+        program_state.request_calibration(time.time())
+
+    def calibrate_release(self, event):
+        # when button is released we clear the time and reset calibrate button
+        program_state.request_calibration(0)
+        self.root.settings_win.calibrateModeBtn.configure(bg='yellow', activebackground='yellow', text='CALIBRATE')
 
     def thresh_btn(self):
         if (self.root.settings_win.threshModeBtn.cget('text') == 'THRESH MODE') :

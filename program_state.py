@@ -9,7 +9,7 @@ STOP_PROGRAM = False
 ADMIN_USER = False
 CALIBRATE_MODE = False
 THRESH_MODE = False
-REQUEST_CALIBRATE = False
+REQUEST_CALIBRATE = 0
 CLEAR_RESULTS = False
 
 def set_admin_user(value):

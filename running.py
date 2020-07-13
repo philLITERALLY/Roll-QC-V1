@@ -308,7 +308,8 @@ class imgProc (threading.Thread):
                         pixel_dimensions = '{0}px x {1}px'.format(int(w), int(h))
                         cv2.putText(CROPPED, pixel_dimensions, (start_pos, low_pos), handle_config.FONT, stats_font_size, handle_config.RED, 2)
 
-            if program_state.REQUEST_CALIBRATE:
+            # If button has been helf for more than 1 second run calibrate mode
+            if program_state.REQUEST_CALIBRATE != 0 and (time.time() - program_state.REQUEST_CALIBRATE) > 1:
                 for lane in range(handle_config.LANE_COUNT): # loop through lanes
                     if RECTS_ARR[lane]: # if lane has contour
                         current_rect = RECTS_ARR[lane]
@@ -341,7 +342,8 @@ class imgProc (threading.Thread):
                 handle_config.setValue('CALIBRATION', 'PIXEL_WIDTHS', handle_config.PIXEL_WIDTHS)
                 handle_config.setValue('CALIBRATION', 'PIXEL_HEIGHTS', handle_config.PIXEL_HEIGHTS)
 
-                program_state.request_calibration(False)
+                program_state.request_calibration(0)
+                app.root.settings_win.calibrateModeBtn.configure(bg='green', activebackground='green', text='CALIBRATED')
 
             # Not Thresh Mode
             not_thresh_statement = (lane for lane in range(handle_config.LANE_COUNT) if not program_state.THRESH_MODE and not program_state.CALIBRATE_MODE)

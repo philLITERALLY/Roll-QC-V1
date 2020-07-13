@@ -47,8 +47,7 @@ def calibrateModeBtn(self, settings_win):
         width=20,
         height=5,
         bg='yellow',
-        activebackground='yellow',
-        command=self.calibrate_btn
+        activebackground='yellow'
     )
 
 def threshModeBtn(self, settings_win):
