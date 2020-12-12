@@ -4,7 +4,7 @@
 import subprocess
 current_machine_id = subprocess.check_output('wmic csproduct get uuid').decode().split('\n')[1].strip()
 if current_machine_id != '03000200-0400-0500-0006-000700080009':
-    print 'Computer is not verified'
+    print('Computer is not verified')
     quit()
 
 # External Libraries
@@ -170,7 +170,11 @@ class statsThread (threading.Thread):
                     LANE_FLAG[lane] = ''
 
                 # Skip everything else
-                pass
+                continue
+
+            exiting_box = handle_config.LANE_HEIGHT_START + \
+                handle_config.LANE_HEIGHT - \
+                handle_config.EDGE_GAP
 
             for lane in range(handle_config.LANE_COUNT):
                 # if lanes rectangle hasn't changed then skip
@@ -184,9 +188,6 @@ class statsThread (threading.Thread):
                     current_box = BOX_ARR[lane][:]
 
                     high_pos = max([position[1] for position in current_box])
-                    exiting_box = handle_config.LANE_HEIGHT_START + \
-                        handle_config.LANE_HEIGHT - \
-                        handle_config.EDGE_GAP
 
                     # if blob is exiting the box
                     if high_pos > exiting_box:
@@ -374,7 +375,7 @@ class imgProc (threading.Thread):
                 # get boundary of this text
                 textsize = cv2.getTextSize(running_total_txt, handle_config.FONT, 1, 2)[0]
                 # get coords based on boundary
-                textX = (CROPPED.shape[1] - textsize[0]) / 2
+                textX = int((CROPPED.shape[1] - textsize[0]) / 2)
 
                 textPos = 835
                 if handle_config.LANE_COUNT == 3:
@@ -419,7 +420,7 @@ class imgProc (threading.Thread):
             # get boundary of this text
             textsize = cv2.getTextSize(outputTxt, handle_config.FONT, 1, 2)[0]
             # get coords based on boundary
-            textX = (CROPPED.shape[1] - textsize[0]) / 2
+            textX = int((CROPPED.shape[1] - textsize[0]) / 2)
             # Show current AIO
             cv2.putText(CROPPED, outputTxt, (textX, 435), handle_config.FONT, 1, handle_config.RED, 2)
 
@@ -437,7 +438,7 @@ class imgProc (threading.Thread):
             cv2.putText(CROPPED, min_length + min_thickness, (50 + reject_y_offset, 1050 - reject_x_offset), handle_config.FONT, 1, handle_config.RED, 2)
 
             window_name = 'LINE VIEW'
-            if DISPLAY_IMG != []:
+            if DISPLAY_IMG.size <> 0:
                 cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
                 cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
                 cv2.imshow(window_name, DISPLAY_IMG)
@@ -453,10 +454,11 @@ class laneThread (threading.Thread):
     def run(self):
         global THRESHOLD_IMG # Thresholded image
         global RECTS_ARR     # contains current bounding rectangles
+        lane = self.lane
+
         while not program_state.STOP_PROGRAM:
-            lane = self.lane
-            while len(THRESHOLD_IMG) == 0:
-                pass
+            if len(THRESHOLD_IMG) == 0:
+                continue
 
             LANE_RECTS = []
             LANE_BOXES = []
@@ -470,6 +472,7 @@ class laneThread (threading.Thread):
                 except Exception as e:
                     info_logger.lane_error(lane, CONTOURS, e)
 
+                # biggest contour details
                 rect = cv2.minAreaRect(contour)
                 box = cv2.boxPoints(rect)[:]
                 box = np.int64(box)
@@ -479,7 +482,7 @@ class laneThread (threading.Thread):
                 # if area big enough
                 # if contour within top bound
                 if cv2.contourArea(contour) > handle_config.MIN_AREA and \
-                    start_pos > handle_config.EDGE_GAP:
+                    start_pos > 0:
 
                     for position in box:
                         position[0] += handle_config.LANE_WIDTH_START[lane]
@@ -568,4 +571,4 @@ print('Exiting Main Thread')
 CAPTURE.release() # Release everything if job is finished
 AIO_INSTANCE.RelOutPort(0, 0, 0) # Reset AIO to empty
 cv2.destroyAllWindows() # Destroy all opencv windows
-app.root.destroy() # Destroy tkInter windows
+app.root.destroy() # Destroy Tkinter windows

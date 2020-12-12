@@ -12,7 +12,7 @@ import handle_config
 
 my_path = os.path.abspath(os.path.dirname(__file__))
 
-logging.basicConfig(filename='logging_' + datetime.datetime.now().strftime('%d-%m-%Y') + '.log', level=logging.DEBUG)
+logging.basicConfig(filename='logging/logging_' + datetime.datetime.now().strftime('%d-%m-%Y') + '.log', level=logging.DEBUG)
 
 def init():
     ''' This function creates a new log with current date time '''
